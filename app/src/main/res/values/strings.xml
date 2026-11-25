@@ -2464,6 +2464,8 @@
     <string name="nav_decades">Decades</string>
     <string name="nav_my_lists">My Lists</string>
     <string name="nav_addons">Add-ons</string>
+    <string name="layout_titanium_x">Titanium X</string>
+    <string name="layout_titanium_x_desc">Neon hero, category tiles, then your catalogs</string>
     <string name="nav_discover">Discover</string>
     <string name="nav_search">Search</string>
     <string name="nav_library">Library</string>

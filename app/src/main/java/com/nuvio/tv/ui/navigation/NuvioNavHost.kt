@@ -291,6 +291,9 @@ private fun PlaybackNavHost(
                 },
                 onNavigateToFolderDetail = { collectionId, folderId ->
                     navController.navigate(Screen.FolderDetail.createRoute(collectionId, folderId))
+                },
+                onTitaniumTileClick = { tile ->
+                    navController.navigateToTitaniumTile(tile)
                 }
             )
         }

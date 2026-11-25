@@ -59,7 +59,7 @@ fun LayoutSelectionScreen(
     onContinue: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    var selectedLayout by remember { mutableStateOf(HomeLayout.MODERN) }
+    var selectedLayout by remember { mutableStateOf(HomeLayout.TITANIUM_X) }
     val continueFocusRequester = remember { FocusRequester() }
 
     LaunchedEffect(uiState.selectedLayout) {
@@ -122,6 +122,13 @@ fun LayoutSelectionScreen(
                     layout = HomeLayout.CLASSIC,
                     isSelected = selectedLayout == HomeLayout.CLASSIC,
                     onSelect = { selectedLayout = HomeLayout.CLASSIC },
+                    modifier = Modifier.weight(1f)
+                )
+
+                LayoutOptionCard(
+                    layout = HomeLayout.TITANIUM_X,
+                    isSelected = selectedLayout == HomeLayout.TITANIUM_X,
+                    onSelect = { selectedLayout = HomeLayout.TITANIUM_X },
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -217,6 +224,9 @@ private fun LayoutOptionCard(
                         HomeLayout.MODERN -> ModernLayoutPreview(
                             modifier = Modifier.fillMaxSize()
                         )
+                        HomeLayout.TITANIUM_X -> ModernLayoutPreview(
+                            modifier = Modifier.fillMaxSize()
+                        )
                     }
                 }
 
@@ -227,6 +237,7 @@ private fun LayoutOptionCard(
                         HomeLayout.CLASSIC -> stringResource(R.string.layout_classic)
                         HomeLayout.GRID -> stringResource(R.string.layout_grid)
                         HomeLayout.MODERN -> stringResource(R.string.layout_modern)
+                        HomeLayout.TITANIUM_X -> stringResource(R.string.layout_titanium_x)
                     },
                     style = MaterialTheme.typography.titleLarge,
                     color = if (isSelected || isFocused) NuvioTheme.colors.TextPrimary else NuvioTheme.colors.TextSecondary
@@ -239,6 +250,7 @@ private fun LayoutOptionCard(
                     HomeLayout.CLASSIC -> stringResource(R.string.layout_classic_desc)
                     HomeLayout.GRID -> stringResource(R.string.layout_grid_desc)
                     HomeLayout.MODERN -> stringResource(R.string.layout_modern_desc)
+                    HomeLayout.TITANIUM_X -> stringResource(R.string.layout_titanium_x_desc)
                 },
                 style = MaterialTheme.typography.bodySmall,
                 color = NuvioTheme.colors.TextTertiary
