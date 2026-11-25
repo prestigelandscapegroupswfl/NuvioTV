@@ -39,6 +39,8 @@ import kotlin.math.roundToInt
 fun DiscoverScreen(
     viewModel: SearchViewModel = hiltViewModel(),
     showBuiltInHeader: Boolean = true,
+    initialType: String? = null,
+    initialGenre: String? = null,
     onNavigateToDetail: (String, String, String) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -65,6 +67,14 @@ fun DiscoverScreen(
         if (uiState.discoverLocation != DiscoverLocation.OFF) {
             viewModel.ensureDiscoverLoaded()
         }
+    }
+
+    // Titanium X entry points (sidebar Movies / TV Shows, genre tiles) can
+    // pre-select a type and/or genre. Type is applied first because changing
+    // it resets the genre in the view model.
+    LaunchedEffect(initialType, initialGenre) {
+        initialType?.let { viewModel.onEvent(SearchEvent.SelectDiscoverType(it)) }
+        initialGenre?.let { viewModel.onEvent(SearchEvent.SelectDiscoverGenre(it)) }
     }
 
     val latestPendingDiscoverRestore by rememberUpdatedState(pendingDiscoverRestoreOnResume)

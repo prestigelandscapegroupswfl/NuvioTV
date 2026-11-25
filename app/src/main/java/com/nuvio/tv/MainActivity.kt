@@ -49,9 +49,17 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Explore
+import androidx.compose.material.icons.filled.Extension
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Layers
+import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Tv
+import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -242,7 +250,7 @@ data class DrawerItem(
 )
 
 private data class MainUiPrefs(
-    val theme: AppTheme = AppTheme.WHITE,
+    val theme: AppTheme = AppTheme.TITANIUM_X,
     val customThemeColors: CustomThemeColors = CustomThemeColors.Default,
     val memberAccess: MemberAccess = MemberAccess.None,
     val font: AppFont = AppFont.INTER,
@@ -525,7 +533,7 @@ open class MainActivity : ComponentActivity() {
                     experienceModeDataStore.mode,
                 ) { themeAndAccess, font, amoledMode, amoledSurfacesMode, experienceMode ->
                     MainUiPrefs(
-                        theme = themeAndAccess.first.theme ?: AppTheme.WHITE,
+                        theme = themeAndAccess.first.theme ?: AppTheme.TITANIUM_X,
                         customThemeColors = themeAndAccess.first.customColors,
                         memberAccess = themeAndAccess.second,
                         font = font,
@@ -687,7 +695,7 @@ open class MainActivity : ComponentActivity() {
                         ?: activeTheme.takeIf { splashPreferencesReady }
                         ?: splashPrefs.getString("theme_$activeProfileId", null)
                             ?.let { name -> AppTheme.entries.firstOrNull { it.name == name } }
-                        ?: AppTheme.WHITE
+                        ?: AppTheme.TITANIUM_X
                     SplashBackground(
                         profileColorHex = if (hasFocusedOverride) focusedSplashColor else (colorHex ?: fallbackColor),
                         backgroundUrl = resolvedBgUrl,
@@ -1051,6 +1059,16 @@ open class MainActivity : ComponentActivity() {
                             add(Screen.Search.route)
                             add(Screen.Library.route)
                             add(Screen.Settings.route)
+                            // Titanium X sidebar destinations
+                            add(Screen.DiscoverMovies.route)
+                            add(Screen.DiscoverSeries.route)
+                            add(Screen.DiscoverGenre.route)
+                            add(Screen.SearchQuery.route)
+                            add(Screen.TitaniumGenres.route)
+                            add(Screen.TitaniumCollections.route)
+                            add(Screen.TitaniumDecades.route)
+                            add(Screen.Collections.route)
+                            add(Screen.AddonManager.route)
                             if (discoverLocation == DiscoverLocation.IN_SIDEBAR) {
                                 add(Screen.Discover.route)
                             }
@@ -1058,57 +1076,73 @@ open class MainActivity : ComponentActivity() {
                     }
 
                     val strNavHome = stringResource(R.string.nav_home)
-                    val strNavDiscover = stringResource(R.string.nav_discover)
-                    val strNavSearch = stringResource(R.string.nav_search)
-                    val strNavLibrary = stringResource(R.string.nav_library)
+                    val strNavMovies = stringResource(R.string.nav_movies)
+                    val strNavTvShows = stringResource(R.string.nav_tv_shows)
+                    val strNavGenres = stringResource(R.string.nav_genres)
+                    val strNavCollections = stringResource(R.string.nav_collections)
+                    val strNavDecades = stringResource(R.string.nav_decades)
+                    val strNavMyLists = stringResource(R.string.nav_my_lists)
+                    val strNavAddons = stringResource(R.string.nav_addons)
                     val strNavSettings = stringResource(R.string.nav_settings)
+                    // Titanium X sidebar: the nine destinations from the mockup.
                     val drawerItems = remember(
                         strNavHome,
-                        strNavDiscover,
-                        strNavSearch,
-                        strNavLibrary,
-                        strNavSettings,
-                        discoverLocation
+                        strNavMovies,
+                        strNavTvShows,
+                        strNavGenres,
+                        strNavCollections,
+                        strNavDecades,
+                        strNavMyLists,
+                        strNavAddons,
+                        strNavSettings
                     ) {
-                        buildList {
-                            add(
-                                DrawerItem(
-                                    route = Screen.Home.route,
-                                    label = strNavHome,
-                                    icon = Icons.Default.Home
-                                )
+                        listOf(
+                            DrawerItem(
+                                route = Screen.Home.route,
+                                label = strNavHome,
+                                icon = Icons.Default.Home
+                            ),
+                            DrawerItem(
+                                route = Screen.DiscoverMovies.route,
+                                label = strNavMovies,
+                                icon = Icons.Default.Movie
+                            ),
+                            DrawerItem(
+                                route = Screen.DiscoverSeries.route,
+                                label = strNavTvShows,
+                                icon = Icons.Default.Tv
+                            ),
+                            DrawerItem(
+                                route = Screen.TitaniumGenres.route,
+                                label = strNavGenres,
+                                icon = Icons.Default.Layers
+                            ),
+                            DrawerItem(
+                                route = Screen.TitaniumCollections.route,
+                                label = strNavCollections,
+                                icon = Icons.Default.VideoLibrary
+                            ),
+                            DrawerItem(
+                                route = Screen.TitaniumDecades.route,
+                                label = strNavDecades,
+                                icon = Icons.Default.CalendarMonth
+                            ),
+                            DrawerItem(
+                                route = Screen.Library.route,
+                                label = strNavMyLists,
+                                icon = Icons.Default.Favorite
+                            ),
+                            DrawerItem(
+                                route = Screen.AddonManager.route,
+                                label = strNavAddons,
+                                icon = Icons.Default.Extension
+                            ),
+                            DrawerItem(
+                                route = Screen.Settings.route,
+                                label = strNavSettings,
+                                icon = Icons.Default.Settings
                             )
-                            if (discoverLocation == DiscoverLocation.IN_SIDEBAR) {
-                                add(
-                                    DrawerItem(
-                                        route = Screen.Discover.route,
-                                        label = strNavDiscover,
-                                        icon = Icons.Default.Explore
-                                    )
-                                )
-                            }
-                            add(
-                                DrawerItem(
-                                    route = Screen.Search.route,
-                                    label = strNavSearch,
-                                    iconRes = R.raw.sidebar_search
-                                )
-                            )
-                            add(
-                                DrawerItem(
-                                    route = Screen.Library.route,
-                                    label = strNavLibrary,
-                                    iconRes = R.raw.sidebar_library
-                                )
-                            )
-                            add(
-                                DrawerItem(
-                                    route = Screen.Settings.route,
-                                    label = strNavSettings,
-                                    iconRes = R.raw.sidebar_settings
-                                )
-                            )
-                        }
+                        )
                     }
                     val selectedDrawerRoute = drawerItems.firstOrNull { item ->
                         currentRoute == item.route || currentRoute?.startsWith("${item.route}/") == true
@@ -1723,8 +1757,12 @@ private fun LegacySidebarButton(
 ) {
     var isFocused by remember { mutableStateOf(false) }
     val itemShape = NuvioTheme.shapes.navItem
+    // Titanium X: selected item renders as a cyan -> magenta gradient pill.
+    val gradientPill = selected && expanded &&
+        NuvioTheme.currentTheme == AppTheme.TITANIUM_X
     val backgroundColor by animateColorAsState(
         targetValue = when {
+            gradientPill -> Color.Transparent
             isFocused -> NuvioTheme.colors.FocusBackground
             expanded && selected -> NuvioTheme.colors.Secondary
             else -> Color.Transparent
@@ -1733,6 +1771,7 @@ private fun LegacySidebarButton(
     )
     val contentColor by animateColorAsState(
         targetValue = when {
+            gradientPill -> Color.White
             isFocused -> NuvioTheme.colors.TextPrimary
             expanded && selected -> NuvioTheme.colors.OnSecondary
             else -> NuvioTheme.colors.TextSecondary
@@ -1741,6 +1780,7 @@ private fun LegacySidebarButton(
     )
     val iconTint by animateColorAsState(
         targetValue = when {
+            gradientPill -> Color.White
             isFocused -> NuvioTheme.colors.TextPrimary
             expanded && selected -> NuvioTheme.colors.OnSecondary
             selected -> NuvioTheme.colors.Secondary
@@ -1788,6 +1828,16 @@ private fun LegacySidebarButton(
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .then(
+                    if (gradientPill) {
+                        Modifier.background(
+                            brush = NuvioTheme.palette.accentBrush(),
+                            shape = itemShape
+                        )
+                    } else {
+                        Modifier
+                    }
+                )
                 .semantics {
                     contentDescription = label
                     role = Role.Tab
@@ -2218,6 +2268,7 @@ private fun ModernSidebarScaffold(
             if (
                 !sidebarCollapsed &&
                 sidebarShowCollapsedPill &&
+                !showExpandedPanel &&
                 selectedDrawerRoute != Screen.Search.route
             ) {
                 CollapsedSidebarPill(

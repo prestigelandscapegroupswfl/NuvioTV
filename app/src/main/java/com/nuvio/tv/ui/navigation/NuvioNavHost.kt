@@ -44,6 +44,11 @@ import com.nuvio.tv.ui.screens.party.PartyScreen
 import com.nuvio.tv.ui.screens.plugin.PluginScreen
 import com.nuvio.tv.ui.screens.search.DiscoverScreen
 import com.nuvio.tv.ui.screens.search.SearchScreen
+import com.nuvio.tv.ui.screens.search.SearchEvent
+import com.nuvio.tv.ui.screens.titanium.TitaniumCategoriesScreen
+import com.nuvio.tv.ui.screens.titanium.TitaniumSection
+import com.nuvio.tv.ui.screens.titanium.TitaniumTile
+import com.nuvio.tv.ui.screens.titanium.TitaniumTileAction
 import com.nuvio.tv.ui.screens.settings.AboutScreen
 import com.nuvio.tv.ui.screens.settings.LayoutSettingsScreen
 import com.nuvio.tv.ui.screens.settings.LicensesAttributionsScreen
@@ -286,6 +291,9 @@ private fun PlaybackNavHost(
                 },
                 onNavigateToFolderDetail = { collectionId, folderId ->
                     navController.navigate(Screen.FolderDetail.createRoute(collectionId, folderId))
+                },
+                onTitaniumTileClick = { tile ->
+                    navController.navigateToTitaniumTile(tile)
                 }
             )
         }
@@ -1225,6 +1233,121 @@ private fun PlaybackNavHost(
             )
         }
 
+        // Titanium X sidebar destinations: Movies / TV Shows open Discover
+        // with the type pre-selected.
+        composable(Screen.DiscoverMovies.route) {
+            DiscoverScreen(
+                showBuiltInHeader = !hideBuiltInHeaders,
+                initialType = "movie",
+                onNavigateToDetail = { itemId, itemType, addonBaseUrl ->
+                    val heroBackdrop = HeroBackdropState.consumeAndClear()
+                    navController.navigate(
+                        Screen.Detail.createRoute(
+                            itemId = itemId,
+                            itemType = itemType,
+                            addonBaseUrl = addonBaseUrl,
+                            heroBackdropUrl = heroBackdrop
+                        )
+                    )
+                }
+            )
+        }
+
+        composable(Screen.DiscoverSeries.route) {
+            DiscoverScreen(
+                showBuiltInHeader = !hideBuiltInHeaders,
+                initialType = "series",
+                onNavigateToDetail = { itemId, itemType, addonBaseUrl ->
+                    val heroBackdrop = HeroBackdropState.consumeAndClear()
+                    navController.navigate(
+                        Screen.Detail.createRoute(
+                            itemId = itemId,
+                            itemType = itemType,
+                            addonBaseUrl = addonBaseUrl,
+                            heroBackdropUrl = heroBackdrop
+                        )
+                    )
+                }
+            )
+        }
+
+        composable(
+            Screen.DiscoverGenre.route,
+            arguments = listOf(navArgument("genre") { type = NavType.StringType })
+        ) { backStackEntry ->
+            DiscoverScreen(
+                showBuiltInHeader = !hideBuiltInHeaders,
+                initialGenre = backStackEntry.arguments?.getString("genre"),
+                onNavigateToDetail = { itemId, itemType, addonBaseUrl ->
+                    val heroBackdrop = HeroBackdropState.consumeAndClear()
+                    navController.navigate(
+                        Screen.Detail.createRoute(
+                            itemId = itemId,
+                            itemType = itemType,
+                            addonBaseUrl = addonBaseUrl,
+                            heroBackdropUrl = heroBackdrop
+                        )
+                    )
+                }
+            )
+        }
+
+        composable(
+            Screen.SearchQuery.route,
+            arguments = listOf(navArgument("query") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val query = backStackEntry.arguments?.getString("query").orEmpty()
+            val searchViewModel: com.nuvio.tv.ui.screens.search.SearchViewModel =
+                androidx.hilt.navigation.compose.hiltViewModel(backStackEntry)
+            androidx.compose.runtime.LaunchedEffect(query) {
+                if (query.isNotBlank()) {
+                    searchViewModel.onEvent(SearchEvent.QueryChanged(query))
+                    searchViewModel.onEvent(SearchEvent.SubmitSearch)
+                }
+            }
+            SearchScreen(
+                viewModel = searchViewModel,
+                onNavigateToDetail = { itemId, itemType, addonBaseUrl ->
+                    val heroBackdrop = HeroBackdropState.consumeAndClear()
+                    navController.navigate(
+                        Screen.Detail.createRoute(
+                            itemId = itemId,
+                            itemType = itemType,
+                            addonBaseUrl = addonBaseUrl,
+                            heroBackdropUrl = heroBackdrop
+                        )
+                    )
+                },
+                onNavigateToSeeAll = { catalogId, addonId, type ->
+                    navController.navigate(
+                        Screen.CatalogSeeAll.createRoute(catalogId, addonId, type, fromSearch = true)
+                    )
+                },
+                onOpenDiscover = { navController.navigate(Screen.Discover.route) }
+            )
+        }
+
+        composable(Screen.TitaniumGenres.route) {
+            TitaniumCategoriesScreen(
+                section = TitaniumSection.GENRES,
+                onTileClick = { tile -> navController.navigateToTitaniumTile(tile) }
+            )
+        }
+
+        composable(Screen.TitaniumCollections.route) {
+            TitaniumCategoriesScreen(
+                section = TitaniumSection.COLLECTIONS,
+                onTileClick = { tile -> navController.navigateToTitaniumTile(tile) }
+            )
+        }
+
+        composable(Screen.TitaniumDecades.route) {
+            TitaniumCategoriesScreen(
+                section = TitaniumSection.DECADES,
+                onTileClick = { tile -> navController.navigateToTitaniumTile(tile) }
+            )
+        }
+
         composable(Screen.Library.route) {
             LibraryScreen(
                 showBuiltInHeader = !hideBuiltInHeaders,
@@ -1529,5 +1652,14 @@ private fun PlaybackNavHost(
                 }
             )
         }
+    }
+}
+
+/** Shared navigation for Titanium X category tiles (home rows + category screens). */
+fun NavHostController.navigateToTitaniumTile(tile: TitaniumTile) {
+    when (val action = tile.action) {
+        is TitaniumTileAction.Genre -> navigate(Screen.DiscoverGenre.createRoute(action.genre))
+        is TitaniumTileAction.Search -> navigate(Screen.SearchQuery.createRoute(action.query))
+        TitaniumTileAction.Collections -> navigate(Screen.Collections.route)
     }
 }

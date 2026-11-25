@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Nuvio</string>
+    <string name="app_name">Titanium X</string>
     <string name="tv_channel_continue_watching">Continue Watching</string>
     <string name="type_movie">Movie</string>
     <string name="type_movies">Movies</string>
@@ -339,6 +339,7 @@
     <string name="theme_color_amber">Amber</string>
     <string name="theme_color_rose">Rose</string>
     <string name="theme_color_white">White</string>
+    <string name="theme_color_titanium_x">Titanium X</string>
     <string name="theme_color_custom">Custom</string>
     <string name="custom_theme_title">Your custom gradient</string>
     <string name="custom_theme_subtitle">Choose three colors for your theme. Select a color to edit it.</string>
@@ -2457,6 +2458,13 @@
 
     <!-- SidebarNavigation / MainActivity -->
     <string name="nav_home">Home</string>
+    <string name="nav_tv_shows">TV Shows</string>
+    <string name="nav_genres">Genres</string>
+    <string name="nav_collections">Collections</string>
+    <string name="nav_decades">Decades</string>
+    <string name="nav_my_lists">My Lists</string>
+    <string name="layout_titanium_x">Titanium X</string>
+    <string name="layout_titanium_x_desc">Neon hero, category tiles, then your catalogs</string>
     <string name="nav_discover">Discover</string>
     <string name="nav_search">Search</string>
     <string name="nav_library">Library</string>
