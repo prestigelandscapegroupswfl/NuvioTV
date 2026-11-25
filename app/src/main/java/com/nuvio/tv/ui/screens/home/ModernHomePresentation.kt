@@ -34,7 +34,7 @@ internal fun buildModernHomePresentation(
     context: Context,
     maxCatalogRows: Int? = null
 ): ModernHomePresentationState {
-    val visibleHomeRows = resolveVisibleHomeRows(input)
+    val visibleHomeRows = resolveVisibleHomeRows(input).sortedBy(::titaniumShelfPriority)
     val localizedContext = context.withAppLocale()
     val strContinueWatching = localizedContext.getString(R.string.continue_watching)
     val strAirsDate = localizedContext.getString(R.string.cw_airs_date)
@@ -333,6 +333,17 @@ internal fun buildModernHomePresentation(
         rows = rows.asStable(),
         lookups = lookups
     )
+}
+
+private fun titaniumShelfPriority(row: HomeRow): Int {
+    val collection = (row as? HomeRow.CollectionRow)?.collection ?: return 4
+    if (collection.pinToTop) return 0
+    return when (collection.title.trim().lowercase()) {
+        "genres" -> 1
+        "collections", "boxsets & collections" -> 2
+        "decades" -> 3
+        else -> 4
+    }
 }
 
 private fun resolveVisibleHomeRows(input: ModernHomePresentationInput): List<HomeRow> {

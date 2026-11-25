@@ -12,6 +12,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.BringIntoViewSpec
 import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
@@ -59,6 +60,7 @@ import kotlin.math.abs
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -90,6 +92,7 @@ import com.nuvio.tv.ui.util.StableRef
 import com.nuvio.tv.ui.util.asStable
 import com.nuvio.tv.ui.util.formatHeroRuntime
 import com.nuvio.tv.ui.util.recompositionHighlighter
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import kotlinx.coroutines.delay
@@ -1133,19 +1136,39 @@ fun ModernHomeContent(
 
             val focusedHomeRow = carouselRows.list.firstOrNull { it.key == activeRowKey.value }
                 ?: carouselRows.list.firstOrNull()
-            val isCollectionShelf = focusedHomeRow?.items?.list?.firstOrNull()?.payload
-                is ModernPayload.CollectionFolder
+            val focusedShelfItem = focusedHomeRow?.items?.list?.firstOrNull()
+            val isCollectionShelf = focusedShelfItem?.payload is ModernPayload.CollectionFolder
             val showTitaniumBanner = isCollectionShelf &&
                 !shouldPlayCollectionHeroVideoUpdated && !shouldPlayCatalogHeroTrailerUpdated
             if (showTitaniumBanner) {
-                BrandWordmark(
-                    contentDescription = "Titanium X",
+                val bannerSurface = NuvioTheme.colors.Background
+                Box(
                     modifier = Modifier
                         .align(Alignment.TopCenter)
-                        .padding(top = screenHeight * 0.12f)
-                        .fillMaxWidth(0.58f)
-                        .height(screenHeight * 0.22f)
-                )
+                        .fillMaxWidth()
+                        .height(heroBackdropHeight),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Image(
+                        painter = painterResource(R.drawable.titanium_cinema_panorama),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                    Box(
+                        modifier = Modifier.fillMaxSize().background(
+                            Brush.verticalGradient(
+                                0f to Color.Transparent,
+                                0.62f to Color.Transparent,
+                                1f to bannerSurface
+                            )
+                        )
+                    )
+                    BrandWordmark(
+                        contentDescription = "Titanium X",
+                        modifier = Modifier.fillMaxWidth(0.58f).height(screenHeight * 0.22f)
+                    )
+                }
             } else {
                 HeroTitleBlock(
                     previewProvider = {
