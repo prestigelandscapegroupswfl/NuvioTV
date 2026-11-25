@@ -309,7 +309,9 @@ private fun FolderCard(
                     style = cardDepthStyle
                 )
         ) {
-            if (folder.tileShape == PosterShape.LANDSCAPE) {
+            val useComposedLandscape = folder.tileShape == PosterShape.LANDSCAPE &&
+                folder.coverImageUrl.isNullOrBlank() && folder.coverEmoji.isNullOrBlank() && !folder.hideTitle
+            if (useComposedLandscape) {
                 TitaniumLandscapeArtwork(folder = folder, focused = isFocused)
             } else {
                 val activeImageUrl = collectionFolderCardImageUrl(folder, isFocused)
@@ -345,46 +347,47 @@ private fun FolderCard(
                     }
                 }
 
-                // GIF overlay: show on top of cover image or emoji, visible only once loaded
-                val focusGifUrl = if (isFocused && folder.focusGifEnabled) folder.focusGifUrl else null
-                if (!focusGifUrl.isNullOrBlank()) {
-                    var gifLoaded by remember(focusGifUrl) { mutableStateOf(false) }
-                    val gifAlpha by animateFloatAsState(
-                        targetValue = if (gifLoaded) 1f else 0f,
-                        animationSpec = tween(durationMillis = 200),
-                        label = "gifFadeIn"
-                    )
-                    AsyncImage(
-                        model = focusGifUrl,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clip(shape)
-                            .graphicsLayer { alpha = gifAlpha },
-                        contentScale = ContentScale.Fit,
-                        onSuccess = { gifLoaded = true }
-                    )
-                }
+            }
 
-                if (!folder.hideTitle) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .align(Alignment.BottomCenter)
-                            .padding(NuvioTheme.spacing.sm),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = folder.title,
-                            style = MaterialTheme.typography.labelMedium.copy(
-                                textDirection = folder.title.contentTextDirection()
-                            ),
-                            color = Color.White,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            textAlign = TextAlign.Center
-                        )
-                    }
+            // GIF overlay: show on top of any cover shape, visible only once loaded
+            val focusGifUrl = if (isFocused && folder.focusGifEnabled) folder.focusGifUrl else null
+            if (!focusGifUrl.isNullOrBlank()) {
+                var gifLoaded by remember(focusGifUrl) { mutableStateOf(false) }
+                val gifAlpha by animateFloatAsState(
+                    targetValue = if (gifLoaded) 1f else 0f,
+                    animationSpec = tween(durationMillis = 200),
+                    label = "gifFadeIn"
+                )
+                AsyncImage(
+                    model = focusGifUrl,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(shape)
+                        .graphicsLayer { alpha = gifAlpha },
+                    contentScale = ContentScale.Fit,
+                    onSuccess = { gifLoaded = true }
+                )
+            }
+
+            if (!useComposedLandscape && !folder.hideTitle) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.BottomCenter)
+                        .padding(NuvioTheme.spacing.sm),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = folder.title,
+                        style = MaterialTheme.typography.labelMedium.copy(
+                            textDirection = folder.title.contentTextDirection()
+                        ),
+                        color = Color.White,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center
+                    )
                 }
             }
         }
