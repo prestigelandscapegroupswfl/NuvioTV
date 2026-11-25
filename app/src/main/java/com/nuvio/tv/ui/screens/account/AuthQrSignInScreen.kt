@@ -93,6 +93,35 @@ fun AuthQrSignInScreen(
     viewModel: AccountViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    if (!viewModel.supportsCloudLogin) {
+        BackHandler { (onContinue ?: onBackPress).invoke() }
+        Box(Modifier.fillMaxSize().background(Color.Black).authGradientBackground()) {
+            Column(
+                modifier = Modifier.align(Alignment.Center).widthIn(max = 620.dp).padding(32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                BrandWordmark(modifier = Modifier.height(76.dp), contentDescription = stringResource(R.string.titanium_brand_name))
+                Spacer(Modifier.height(24.dp))
+                Text(stringResource(R.string.titanium_local_setup_title), color = AuthTextPrimary,
+                    style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center)
+                Spacer(Modifier.height(12.dp))
+                Text(stringResource(R.string.titanium_cloud_unavailable), color = AuthTextSecondary,
+                    style = MaterialTheme.typography.bodyLarge, textAlign = TextAlign.Center)
+                Spacer(Modifier.height(28.dp))
+                val localFocus = remember { FocusRequester() }
+                Button(onClick = { (onContinue ?: onBackPress).invoke() }, modifier = Modifier.focusRequester(localFocus)) {
+                    Text(stringResource(R.string.titanium_continue_local))
+                }
+                LaunchedEffect(Unit) { localFocus.requestFocusAfterFrames(frames = 3) }
+            }
+            if (BuildConfig.FEATURE_CUSTOM_SERVER_CONNECTIONS_ENABLED) {
+                ServerOptionsMenuHost(viewModel = hiltViewModel(),
+                    modifier = Modifier.align(Alignment.TopStart).padding(28.dp))
+            }
+        }
+        return
+    }
     val fullAccount = uiState.authState as? AuthState.FullAccount
     val isSignedIn = fullAccount != null
     val isOnboardingMode = onContinue != null

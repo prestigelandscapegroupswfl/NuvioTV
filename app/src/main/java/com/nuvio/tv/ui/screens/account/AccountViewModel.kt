@@ -97,6 +97,9 @@ class AccountViewModel @Inject constructor(
     private var qrLoginPollAttempt: Int = 0
     private var qrLoginExchangeInFlight: Boolean = false
 
+    val supportsCloudLogin: Boolean
+        get() = serverConfiguration.capabilities.emailPasswordAuth || serverConfiguration.capabilities.tvLogin
+
     val usesEmailPasswordLogin: Boolean
         get() = serverConfiguration.isCustom && serverConfiguration.capabilities.emailPasswordAuth
 
