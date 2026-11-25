@@ -95,7 +95,8 @@ fun HomeScreen(
     onContinueWatchingStartFromBeginning: (ContinueWatchingItem) -> Unit = onContinueWatchingClick,
     onContinueWatchingPlayManually: (ContinueWatchingItem) -> Unit = onContinueWatchingClick,
     onNavigateToCatalogSeeAll: (String, String, String) -> Unit = { _, _, _ -> },
-    onNavigateToFolderDetail: (String, String) -> Unit = { _, _ -> }
+    onNavigateToFolderDetail: (String, String) -> Unit = { _, _ -> },
+    onOpenTitaniumCategory: (String, String) -> Unit = { _, _ -> }
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -232,6 +233,7 @@ fun HomeScreen(
         hasCollectionContent
     val showStartupLoader = when {
         !uiState.layoutPreferencesReady -> true
+        uiState.homeLayout == HomeLayout.MODERN && homeStableGateReleased -> false
         uiState.isLoading && !hasAnyContent -> true
         uiState.error == noAddonsError && uiState.catalogRows.isEmpty() -> !homeStableGateReleased
         uiState.error == noCatalogAddonsError && uiState.catalogRows.isEmpty() && !hasCollectionContent && !hasHeroContent -> !homeStableGateReleased
@@ -261,6 +263,24 @@ fun HomeScreen(
         when {
             !uiState.layoutPreferencesReady -> {
                 Unit
+            }
+
+            uiState.homeLayout == HomeLayout.MODERN && homeStableGateReleased -> {
+                TitaniumHomeRoute(
+                    viewModel = viewModel,
+                    uiState = uiState,
+                    posterCardStyle = posterCardStyle,
+                    onNavigateToDetail = onNavigateToDetailStable,
+                    onContinueWatchingClick = onContinueWatchingClickStable,
+                    onContinueWatchingStartFromBeginning = onContinueWatchingStartFromBeginningStable,
+                    onContinueWatchingPlayManually = onContinueWatchingPlayManuallyStable,
+                    showContinueWatchingManualPlayOption = effectiveAutoplayEnabled,
+                    onNavigateToCatalogSeeAll = onNavigateToCatalogSeeAllStable,
+                    onNavigateToFolderDetail = onNavigateToFolderDetailStable,
+                    isCatalogItemWatched = isCatalogItemWatched,
+                    onCatalogItemLongPress = onCatalogItemLongPress,
+                    onTitaniumTileClick = { section, title -> onOpenTitaniumCategory(section.name, title) }
+                )
             }
 
             uiState.isLoading && !hasAnyContent -> {

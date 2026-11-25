@@ -18,6 +18,8 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.runtime.LaunchedEffect
+import com.nuvio.tv.ui.screens.search.SearchEvent
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -286,6 +288,24 @@ private fun PlaybackNavHost(
                 },
                 onNavigateToFolderDetail = { collectionId, folderId ->
                     navController.navigate(Screen.FolderDetail.createRoute(collectionId, folderId))
+                },
+                onOpenTitaniumCategory = { section, title ->
+                    when (section) {
+                        "GENRES" -> {
+                            navController.navigate(Screen.Discover.route)
+                            navController.currentBackStackEntry?.savedStateHandle?.set("titaniumGenre", title)
+                        }
+                        "COLLECTIONS" -> {
+                            navController.navigate(Screen.Search.route)
+                            navController.currentBackStackEntry?.savedStateHandle?.set(
+                                "titaniumQuery", if (title == "DC") "Batman" else title
+                            )
+                        }
+                        "DECADES" -> {
+                            Toast.makeText(context, "Add a $title collection to browse this decade.", Toast.LENGTH_LONG).show()
+                            navController.navigate(Screen.Collections.route)
+                        }
+                    }
                 }
             )
         }
@@ -1186,6 +1206,15 @@ private fun PlaybackNavHost(
         composable(Screen.Search.route) { backStackEntry ->
             val searchViewModel: com.nuvio.tv.ui.screens.search.SearchViewModel =
                 androidx.hilt.navigation.compose.hiltViewModel(backStackEntry)
+            val titaniumQuery by backStackEntry.savedStateHandle
+                .getStateFlow<String?>("titaniumQuery", null).collectAsStateWithLifecycle()
+            LaunchedEffect(titaniumQuery) {
+                titaniumQuery?.let { query ->
+                    searchViewModel.onEvent(SearchEvent.QueryChanged(query))
+                    searchViewModel.onEvent(SearchEvent.SubmitSearch)
+                    backStackEntry.savedStateHandle["titaniumQuery"] = null
+                }
+            }
             SearchScreen(
                 viewModel = searchViewModel,
                 onNavigateToDetail = { itemId, itemType, addonBaseUrl ->
@@ -1208,8 +1237,11 @@ private fun PlaybackNavHost(
             )
         }
 
-        composable(Screen.Discover.route) {
+        composable(Screen.Discover.route) { backStackEntry ->
+            val titaniumGenre by backStackEntry.savedStateHandle
+                .getStateFlow<String?>("titaniumGenre", null).collectAsStateWithLifecycle()
             DiscoverScreen(
+                initialGenre = titaniumGenre,
                 showBuiltInHeader = !hideBuiltInHeaders,
                 onNavigateToDetail = { itemId, itemType, addonBaseUrl ->
                     val heroBackdrop = HeroBackdropState.consumeAndClear()

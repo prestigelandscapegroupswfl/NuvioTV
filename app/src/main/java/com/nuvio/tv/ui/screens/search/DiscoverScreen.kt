@@ -39,6 +39,7 @@ import kotlin.math.roundToInt
 fun DiscoverScreen(
     viewModel: SearchViewModel = hiltViewModel(),
     showBuiltInHeader: Boolean = true,
+    initialGenre: String? = null,
     onNavigateToDetail: (String, String, String) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -65,6 +66,27 @@ fun DiscoverScreen(
         if (uiState.discoverLocation != DiscoverLocation.OFF) {
             viewModel.ensureDiscoverLoaded()
         }
+    }
+
+    var appliedTitaniumGenre by rememberSaveable { mutableStateOf<String?>(null) }
+    LaunchedEffect(initialGenre, uiState.discoverCatalogs, uiState.discoverLocation) {
+        val requestedGenre = initialGenre ?: return@LaunchedEffect
+        if (appliedTitaniumGenre == requestedGenre || uiState.discoverLocation == DiscoverLocation.OFF) {
+            return@LaunchedEffect
+        }
+        val names = when (requestedGenre) {
+            "Sci-Fi" -> setOf("sci-fi", "sci fi", "science fiction")
+            "Western" -> setOf("western", "westerns")
+            else -> setOf(requestedGenre.lowercase())
+        }
+        val catalog = uiState.discoverCatalogs.firstOrNull { candidate ->
+            candidate.type == uiState.selectedDiscoverType &&
+                candidate.genres.any { it.lowercase() in names }
+        } ?: return@LaunchedEffect
+        val genre = catalog.genres.first { it.lowercase() in names }
+        appliedTitaniumGenre = requestedGenre
+        viewModel.onEvent(SearchEvent.SelectDiscoverCatalog(catalog.key))
+        viewModel.onEvent(SearchEvent.SelectDiscoverGenre(genre))
     }
 
     val latestPendingDiscoverRestore by rememberUpdatedState(pendingDiscoverRestoreOnResume)
