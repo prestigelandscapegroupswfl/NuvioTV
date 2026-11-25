@@ -10,11 +10,24 @@ import org.junit.Test
 
 class FocusRingStyleTest {
     @Test
-    fun standardThemeUsesItsSolidFocusColor() {
-        val style = createFocusRingStyle(ThemeColors.Ocean)
+    fun solidThemeKeepsItsSolidFocusColor() {
+        val style = createFocusRingStyle(ThemeColors.White)
 
-        assertEquals(Color(0xFF42A5F5), style.solidColor)
+        assertEquals(ThemeColors.White.focusRing, style.solidColor)
         assertTrue(style.brush() is SolidColor)
+    }
+
+    @Test
+    fun titaniumStandardThemesUseTheirOwnGradientFocusRings() {
+        val palettes = listOf(ThemeColors.Crimson, ThemeColors.Ocean, ThemeColors.Violet,
+            ThemeColors.Emerald, ThemeColors.Amber, ThemeColors.Rose)
+        palettes.forEach { palette ->
+            val style = createFocusRingStyle(palette)
+            assertEquals(palette.focusRing, style.solidColor)
+            assertTrue(palette.focusRingGradient.size > 1)
+            assertFalse(style.brush() is SolidColor)
+            assertEquals(palette.focusRingGradient, palette.accentGradient)
+        }
     }
 
     @Test
