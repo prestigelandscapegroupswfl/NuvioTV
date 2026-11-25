@@ -45,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -107,7 +108,12 @@ internal fun TitaniumHomeRoute(
         },
         isCatalogItemWatched = isCatalogItemWatched,
         onCatalogItemLongPress = onCatalogItemLongPress,
-        onTitaniumTileClick = onTitaniumTileClick
+        onTitaniumTileClick = onTitaniumTileClick,
+        availableCollectionCatalogs = {
+            viewModel.addonsCache.asSequence().filter { it.enabled }.flatMap { addon ->
+                addon.catalogs.asSequence().map { catalog -> Triple(addon.id, catalog.id, catalog.apiType) }
+            }.toSet()
+        }
     )
 }
 
@@ -127,9 +133,12 @@ internal fun TitaniumHomeContent(
     isCatalogItemWatched: (MetaPreview) -> Boolean = { false },
     onCatalogItemLongPress: (MetaPreview, String) -> Unit = { _, _ -> },
     onTitaniumTileClick: (TitaniumHomeSection, String) -> Unit = { _, _ -> },
-    scrollToTopTrigger: Int = 0
+    scrollToTopTrigger: Int = 0,
+    availableCollectionCatalogs: () -> Set<Triple<String, String, String>> = { emptySet() }
 ) {
     val listState = rememberLazyListState()
+    val context = LocalContext.current
+    val collectionArtwork = remember(context) { TitaniumCollectionArtwork.load(context) }
 
     LaunchedEffect(scrollToTopTrigger) {
         if (scrollToTopTrigger > 0) {
@@ -163,7 +172,7 @@ internal fun TitaniumHomeContent(
                     item(key = "titanium_row_${section.name}", contentType = "titanium_row") {
                         TitaniumCategoryRow(section, coverWidth, coverHeight) { title ->
                             val names = titaniumTitleAliases(title)
-                            val availableCatalogs = uiState.catalogRows.map { Triple(it.addonId, it.catalogId, it.apiType) }.toSet()
+                            val availableCatalogs = availableCollectionCatalogs()
                             val folder = visibleHomeRows.asSequence()
                                 .filterIsInstance<HomeRow.CollectionRow>()
                                 .flatMap { entry -> entry.collection.folders.asSequence().map { entry.collection.id to it } }
@@ -307,10 +316,14 @@ internal fun TitaniumHomeContent(
                             )
                         }
                         is HomeRow.CollectionRow -> {
+                            val styledCollection = remember(homeRow.collection, collectionArtwork) {
+                                collectionArtwork.applyTo(homeRow.collection)
+                            }
                             CollectionRowSection(
-                                collection = homeRow.collection,
+                                collection = styledCollection,
                                 onFolderClick = onNavigateToFolderDetail,
-                                posterCardStyle = posterCardStyle
+                                posterCardStyle = posterCardStyle,
+                                animateStillCovers = true
                             )
                         }
                         is HomeRow.PlaceholderCatalog -> {

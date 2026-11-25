@@ -10,6 +10,7 @@ import com.nuvio.tv.ui.theme.NuvioTheme
 import com.nuvio.tv.ui.util.contentTextDirection
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,6 +39,7 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.focusRestorer
@@ -46,7 +48,11 @@ import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.gestures.BringIntoViewSpec
 import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
 import androidx.compose.animation.core.AnimationSpec
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalDensity
@@ -86,7 +92,8 @@ fun CollectionRowSection(
     onItemFocused: (itemIndex: Int) -> Unit = {},
     onFolderFocused: (collection: Collection, folder: CollectionFolder) -> Unit = { _, _ -> },
     entryFocusRequester: FocusRequester? = null,
-    rowFocusRequester: FocusRequester = remember { FocusRequester() }
+    rowFocusRequester: FocusRequester = remember { FocusRequester() },
+    animateStillCovers: Boolean = false
 ) {
     val currentOnFolderClick by rememberUpdatedState(onFolderClick)
     val currentOnItemFocused by rememberUpdatedState(onItemFocused)
@@ -219,6 +226,7 @@ fun CollectionRowSection(
                         folder = folder,
                         collection = collection,
                         posterCardStyle = posterCardStyle,
+                        animateStillCovers = animateStillCovers,
                         onClick = remember(collection.id, folder.id) { { currentOnFolderClick(collection.id, folder.id) } },
                         onFocused = remember(index, folder.id) {
                             {
@@ -246,6 +254,7 @@ private fun FolderCard(
     folder: CollectionFolder,
     collection: Collection,
     posterCardStyle: PosterCardStyle,
+    animateStillCovers: Boolean,
     onClick: () -> Unit,
     onFocused: () -> Unit,
     modifier: Modifier = Modifier,
@@ -316,13 +325,19 @@ private fun FolderCard(
             } else {
                 val activeImageUrl = collectionFolderCardImageUrl(folder, isFocused)
                 if (!activeImageUrl.isNullOrBlank()) {
+                    var coverFailed by remember(activeImageUrl) { mutableStateOf(false) }
+                    if (coverFailed && folder.tileShape == PosterShape.LANDSCAPE) {
+                        TitaniumLandscapeArtwork(folder = folder, focused = isFocused)
+                    }
                     AsyncImage(
                         model = activeImageUrl,
                         contentDescription = if (folder.hideTitle) folder.title else null,
                         modifier = Modifier
                             .fillMaxSize()
                             .clip(shape),
-                        contentScale = ContentScale.Fit
+                        contentScale = ContentScale.Fit,
+                        onError = { coverFailed = true },
+                        onSuccess = { coverFailed = false }
                     )
                 } else if (!folder.coverEmoji.isNullOrBlank()) {
                     Box(
@@ -368,6 +383,24 @@ private fun FolderCard(
                     contentScale = ContentScale.Fit,
                     onSuccess = { gifLoaded = true }
                 )
+            }
+
+            if (animateStillCovers && isFocused && focusGifUrl.isNullOrBlank() && !useComposedLandscape) {
+                val transition = rememberInfiniteTransition(label = "coverFocus")
+                val glowOpacity by transition.animateFloat(
+                    initialValue = 0.12f,
+                    targetValue = 0.65f,
+                    animationSpec = infiniteRepeatable(tween(1250), RepeatMode.Reverse),
+                    label = "coverGlow"
+                )
+                Canvas(Modifier.fillMaxSize()) {
+                    drawLine(
+                        brush = Brush.horizontalGradient(borderColors.map { it.copy(alpha = glowOpacity) }),
+                        start = Offset(size.width * 0.10f, size.height - 2.dp.toPx()),
+                        end = Offset(size.width * 0.90f, size.height - 2.dp.toPx()),
+                        strokeWidth = 2.dp.toPx()
+                    )
+                }
             }
 
             if (!useComposedLandscape && !folder.hideTitle) {
