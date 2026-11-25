@@ -107,6 +107,11 @@ import com.nuvio.tv.domain.model.localizedTitle
 import com.nuvio.tv.ui.components.LoadingIndicator
 import com.nuvio.tv.ui.components.NuvioDialog
 import com.nuvio.tv.ui.theme.NuvioTheme
+import com.nuvio.tv.ui.theme.titaniumSelectedFill
+import com.nuvio.tv.ui.theme.titaniumSelectedContainer
+import com.nuvio.tv.ui.theme.isTitaniumXTheme
+
+import com.nuvio.tv.ui.theme.titaniumScreenBackground
 import com.nuvio.tv.ui.util.localizedContentType
 import com.nuvio.tv.ui.util.localizedGenreLabel
 import kotlinx.coroutines.delay
@@ -309,7 +314,7 @@ fun LibraryScreen(
         state = gridState,
         modifier = Modifier
             .fillMaxSize()
-            .background(NuvioTheme.colors.Background)
+            .titaniumScreenBackground()
             .focusRestorer {
                 val lastKey = lastFocusedPosterKey
                 (if (lastKey != null && lastKey in posterFocusRequesters) {
@@ -749,14 +754,29 @@ private fun LibraryViewModeRow(
                     onClick = { onSelected(mode) },
                     modifier = Modifier
                         .then(if (selected) Modifier.focusRequester(primaryFocusRequester) else Modifier)
+                        .titaniumSelectedFill(selected, androidx.compose.foundation.shape.CircleShape)
                         .semantics {
                             role = Role.Tab
                             this.selected = selected
                         },
                     colors = ButtonDefaults.colors(
-                        containerColor = if (selected) NuvioTheme.colors.FocusBackground else NuvioTheme.colors.BackgroundCard,
+                        containerColor = if (selected) {
+                            titaniumSelectedContainer(true, NuvioTheme.colors.FocusBackground)
+                        } else {
+                            NuvioTheme.colors.BackgroundCard
+                        },
                         contentColor = NuvioTheme.colors.TextPrimary
-                    )
+                    ),
+                    border = if (isTitaniumXTheme()) {
+                        ButtonDefaults.border(
+                            focusedBorder = androidx.tv.material3.Border(
+                                border = NuvioTheme.focusRing.border(NuvioTheme.spacing.xxs),
+                                shape = androidx.compose.foundation.shape.CircleShape
+                            )
+                        )
+                    } else {
+                        ButtonDefaults.border()
+                    }
                 ) {
                     Text(
                         text = when (mode) {
@@ -1467,9 +1487,15 @@ private fun LibraryDropdownPicker(
                             }
                         )
                         .padding(horizontal = 6.dp, vertical = NuvioTheme.spacing.xxs)
-                        .background(
-                            color = itemBackgroundColor,
-                            shape = RoundedCornerShape(10.dp)
+                        .then(
+                            if (isOptionFocused && isTitaniumXTheme()) {
+                                Modifier.titaniumSelectedFill(true, RoundedCornerShape(10.dp))
+                            } else {
+                                Modifier.background(
+                                    color = itemBackgroundColor,
+                                    shape = RoundedCornerShape(10.dp)
+                                )
+                            }
                         )
                         .semantics {
                             // The current option is only distinguished by a background tint,

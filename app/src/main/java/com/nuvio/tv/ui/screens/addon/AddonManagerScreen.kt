@@ -2,6 +2,7 @@ package com.nuvio.tv.ui.screens.addon
 
 import com.nuvio.tv.ui.theme.NuvioPrimitives
 import com.nuvio.tv.ui.theme.NuvioTheme
+import com.nuvio.tv.ui.theme.titaniumScreenBackground
 
 import android.graphics.Bitmap
 import androidx.activity.compose.BackHandler
@@ -157,7 +158,7 @@ fun AddonManagerScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(NuvioTheme.colors.Background),
+                .titaniumScreenBackground(),
             contentAlignment = Alignment.Center
         ) {
             LoadingIndicator()
@@ -317,7 +318,7 @@ fun AddonManagerScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(NuvioTheme.colors.Background)
+            .titaniumScreenBackground()
     ) {
         LazyColumn(
             state = listState,
@@ -345,7 +346,7 @@ fun AddonManagerScreen(
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF1A3A5C)),
+                        colors = CardDefaults.cardColors(containerColor = NuvioTheme.colors.BackgroundCard),
                         shape = RoundedCornerShape(NuvioTheme.radii.md)
                     ) {
                         Text(

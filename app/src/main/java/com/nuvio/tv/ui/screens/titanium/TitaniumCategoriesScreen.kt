@@ -1,5 +1,7 @@
 package com.nuvio.tv.ui.screens.titanium
 
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,15 +17,18 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
+import com.nuvio.tv.LocalSidebarExpanded
+import com.nuvio.tv.ui.theme.NuvioComponents
 import com.nuvio.tv.ui.theme.NuvioTheme
+import com.nuvio.tv.ui.theme.accentBrush
+import com.nuvio.tv.ui.theme.titaniumScreenBackground
 
 /**
  * Full-screen grid for one Titanium X category section (Genres, Collections
@@ -34,11 +39,29 @@ fun TitaniumCategoriesScreen(
     section: TitaniumSection,
     onTileClick: (TitaniumTile) -> Unit
 ) {
+    // The sidebar shells overlay their panel on top of the content instead
+    // of reserving layout space for it. With a flat 48.dp start padding the
+    // grid's first column (and the header) slid underneath the expanded
+    // panel and the tiles' left edge — including the baked-in title art —
+    // was cut off. Reserve the panel's full width whenever the sidebar is
+    // expanded so every tile renders clear of it; collapse back to the
+    // standard margin when the sidebar closes.
+    val sidebarExpanded = LocalSidebarExpanded.current
+    val contentStartPadding by animateDpAsState(
+        targetValue = if (sidebarExpanded) {
+            NuvioComponents.tokens.sidebar.expandedWidth + 24.dp
+        } else {
+            48.dp
+        },
+        animationSpec = tween(durationMillis = 300),
+        label = "titaniumCategoriesStartPadding"
+    )
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(NuvioTheme.colors.Background)
-            .padding(horizontal = 48.dp, vertical = 32.dp)
+            .titaniumScreenBackground()
+            .padding(start = contentStartPadding, end = 48.dp, top = 32.dp, bottom = 32.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Spacer(
@@ -46,9 +69,7 @@ fun TitaniumCategoriesScreen(
                     .width(5.dp)
                     .height(30.dp)
                     .background(
-                        brush = Brush.verticalGradient(
-                            colors = listOf(Color(0xFF22D3EE), Color(0xFFE879F9))
-                        ),
+                        brush = NuvioTheme.palette.accentBrush(),
                         shape = RoundedCornerShape(3.dp)
                     )
             )

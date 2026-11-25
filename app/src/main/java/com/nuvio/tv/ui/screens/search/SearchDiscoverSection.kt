@@ -1,6 +1,9 @@
 package com.nuvio.tv.ui.screens.search
 
 import com.nuvio.tv.ui.theme.NuvioTheme
+import com.nuvio.tv.ui.theme.titaniumSelectedFill
+import com.nuvio.tv.ui.theme.isTitaniumXTheme
+
 import com.nuvio.tv.ui.screens.home.HeroBackdropState
 
 import android.view.KeyEvent as AndroidKeyEvent
@@ -439,9 +442,15 @@ private fun DiscoverDropdownPicker(
                             }
                         )
                         .padding(horizontal = 6.dp, vertical = NuvioTheme.spacing.xxs)
-                        .background(
-                            color = itemBackgroundColor,
-                            shape = RoundedCornerShape(10.dp)
+                        .then(
+                            if (isOptionFocused && isTitaniumXTheme()) {
+                                Modifier.titaniumSelectedFill(true, RoundedCornerShape(10.dp))
+                            } else {
+                                Modifier.background(
+                                    color = itemBackgroundColor,
+                                    shape = RoundedCornerShape(10.dp)
+                                )
+                            }
                         )
                         .onFocusChanged { state ->
                             val hasFocus = state.isFocused || state.hasFocus

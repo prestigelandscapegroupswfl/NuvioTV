@@ -3,6 +3,7 @@ package com.nuvio.tv
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -37,6 +38,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -51,6 +54,7 @@ import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
 import com.nuvio.tv.ui.components.AutoResizeText
 import com.nuvio.tv.ui.components.BrandWordmark
+import com.nuvio.tv.ui.components.LocalBrandWordmarkOverride
 import com.nuvio.tv.ui.components.ProfileAvatarCircle
 import com.nuvio.tv.ui.theme.NuvioComponents
 import com.nuvio.tv.ui.theme.NuvioMotion
@@ -208,6 +212,7 @@ internal fun ModernSidebarBlurPanel(
                             label = item.label,
                             iconRes = item.iconRes,
                             icon = item.icon,
+                            titaniumIconRes = item.titaniumIconRes,
                             selected = selectedDrawerRoute == item.route,
                             focusEnabled = keepSidebarFocusDuringCollapse,
                             labelAlpha = sidebarLabelAlpha,
@@ -234,6 +239,7 @@ private fun SidebarNavigationItem(
     label: String,
     iconRes: Int?,
     icon: ImageVector?,
+    titaniumIconRes: Int? = null,
     selected: Boolean,
     focusEnabled: Boolean,
     labelAlpha: Float,
@@ -366,7 +372,22 @@ private fun SidebarNavigationItem(
             } else {
                 Modifier.size(NuvioComponents.tokens.sidebar.iconSize)
             }
+            // Titanium X: while the Titanium X experience is active (same
+            // signal as the wordmark override), Jay's custom glossy bitmap
+            // icon replaces the tinted vector/SVG icon. The art is
+            // full-colour, so no tint or gradient-brush treatment applies; a
+            // small corner radius lets its dark corners blend into the panel.
+            val titaniumBitmapRes =
+                if (LocalBrandWordmarkOverride.current != null) titaniumIconRes else null
             when {
+                titaniumBitmapRes != null -> Image(
+                    painter = painterResource(id = titaniumBitmapRes),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(NuvioComponents.tokens.sidebar.iconSize)
+                        .clip(RoundedCornerShape(5.dp))
+                )
                 icon != null -> Icon(
                     imageVector = icon,
                     contentDescription = null,

@@ -76,6 +76,10 @@ import com.nuvio.tv.ui.components.ImdbRatingSourceLabel
 import com.nuvio.tv.ui.components.MDBListRatingsRow
 import com.nuvio.tv.ui.components.SynopsisDescription
 import com.nuvio.tv.ui.theme.NuvioTheme
+import com.nuvio.tv.ui.theme.titaniumSelectedFill
+import com.nuvio.tv.ui.theme.titaniumSelectedContainer
+import com.nuvio.tv.ui.theme.isTitaniumXTheme
+
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Shuffle
@@ -447,6 +451,7 @@ internal fun PlayButton(
                 false
             }
             .focusProperties { up = FocusRequester.Cancel }
+            .titaniumSelectedFill(enabled, RoundedCornerShape(NuvioTheme.spacing.xxl))
             .then(
                 if (text == null) {
                     Modifier.semantics { this.contentDescription = playFallbackLabel }
@@ -455,10 +460,18 @@ internal fun PlayButton(
                 }
             ),
         colors = ButtonDefaults.colors(
-            containerColor = androidx.compose.ui.graphics.Color.White,
-            focusedContainerColor = androidx.compose.ui.graphics.Color.White,
-            contentColor = androidx.compose.ui.graphics.Color.Black,
-            focusedContentColor = androidx.compose.ui.graphics.Color.Black
+            containerColor = titaniumSelectedContainer(enabled, androidx.compose.ui.graphics.Color.White),
+            focusedContainerColor = titaniumSelectedContainer(enabled, androidx.compose.ui.graphics.Color.White),
+            contentColor = if (isTitaniumXTheme()) {
+                androidx.compose.ui.graphics.Color.White
+            } else {
+                androidx.compose.ui.graphics.Color.Black
+            },
+            focusedContentColor = if (isTitaniumXTheme()) {
+                androidx.compose.ui.graphics.Color.White
+            } else {
+                androidx.compose.ui.graphics.Color.Black
+            }
         ),
         shape = ButtonDefaults.shape(
             shape = RoundedCornerShape(NuvioTheme.spacing.xxl)

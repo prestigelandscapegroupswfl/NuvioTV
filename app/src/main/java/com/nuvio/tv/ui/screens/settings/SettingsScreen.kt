@@ -5,6 +5,7 @@ package com.nuvio.tv.ui.screens.settings
 import com.nuvio.tv.ui.screens.party.PartySettingsContent
 import com.nuvio.tv.ui.screens.party.PartyViewModel
 import com.nuvio.tv.ui.theme.NuvioTheme
+import com.nuvio.tv.ui.theme.titaniumScreenBackground
 
 import androidx.activity.compose.BackHandler
 import androidx.annotation.RawRes
@@ -197,7 +198,7 @@ fun SettingsScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(NuvioTheme.colors.Background)
+                .titaniumScreenBackground()
         )
         return
     }
@@ -409,7 +410,7 @@ fun SettingsScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(NuvioTheme.colors.Background)
+            .titaniumScreenBackground()
             .padding(
                 start = NuvioTheme.spacing.xxl,
                 end = NuvioTheme.spacing.xxl,

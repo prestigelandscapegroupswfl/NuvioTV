@@ -52,6 +52,7 @@ import com.nuvio.tv.ui.screens.titanium.TitaniumSection
 import com.nuvio.tv.ui.screens.titanium.TitaniumTile
 import com.nuvio.tv.ui.screens.titanium.TitaniumTileCard
 import com.nuvio.tv.ui.theme.NuvioTheme
+import com.nuvio.tv.ui.theme.titaniumScreenBackground
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -151,7 +152,7 @@ fun TitaniumHomeContent(
         state = listState,
         modifier = Modifier
             .fillMaxSize()
-            .background(NuvioTheme.colors.Background),
+            .titaniumScreenBackground(),
         contentPadding = PaddingValues(bottom = 56.dp),
         verticalArrangement = Arrangement.spacedBy(30.dp)
     ) {
@@ -332,14 +333,16 @@ private fun TitaniumHeroHeader() {
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
         )
-        // Fade the bottom of the hero into the screen background.
+        // Fade the bottom of the hero into the screen background. The fade
+        // starts late (0.85) because the current hero art carries its
+        // tagline low in the frame; only the last sliver melts away.
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
                     brush = Brush.verticalGradient(
                         colorStops = arrayOf(
-                            0.55f to Color.Transparent,
+                            0.85f to Color.Transparent,
                             1f to background
                         )
                     )

@@ -1,6 +1,7 @@
 package com.nuvio.tv.ui.screens.search
 
 import com.nuvio.tv.ui.theme.NuvioTheme
+import com.nuvio.tv.ui.theme.titaniumScreenBackground
 import com.nuvio.tv.ui.screens.home.HeroBackdropState
 
 import androidx.compose.foundation.background
@@ -92,7 +93,7 @@ fun DiscoverScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(NuvioTheme.colors.Background)
+            .titaniumScreenBackground()
     ) {
         if (uiState.discoverLocation == DiscoverLocation.OFF) {
             EmptyScreenState(

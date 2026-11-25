@@ -118,10 +118,10 @@ class NuvioColorScheme(
     val Menu = if (pureBlackSurfaces) pureBlack else palette.menu
     val Modal = if (pureBlackSurfaces) pureBlack else palette.modal
     val PlayerOverlay = palette.playerOverlay
-    val Divider = NuvioPrimitives.neutral750
+    val Divider = palette.schemeDivider
 
-    val Primary = NuvioPrimitives.neutral500
-    val PrimaryVariant = NuvioPrimitives.neutral650
+    val Primary = palette.primary
+    val PrimaryVariant = palette.primaryVariant
     val OnPrimary = NuvioPrimitives.white
     val Secondary = palette.secondary
     val SecondaryVariant = palette.secondaryVariant
@@ -129,9 +129,9 @@ class NuvioColorScheme(
     val OnSecondaryVariant = palette.onSecondaryVariant
 
     val TextPrimary = NuvioPrimitives.white
-    val TextSecondary = NuvioPrimitives.neutral400
-    val TextTertiary = NuvioPrimitives.neutral600
-    val TextDisabled = NuvioPrimitives.neutral700
+    val TextSecondary = palette.textSecondary
+    val TextTertiary = palette.textTertiary
+    val TextDisabled = palette.textDisabled
     val TextInverse = NuvioPrimitives.neutral925
 
     val FocusRing = palette.focusRing
@@ -150,9 +150,9 @@ class NuvioColorScheme(
     val Torrent = NuvioPrimitives.torrent
     val Premium = NuvioPrimitives.premium
 
-    val Border = NuvioPrimitives.neutral750
+    val Border = palette.schemeBorder
     val BorderFocused = FocusRing
-    val BorderMuted = NuvioPrimitives.neutral750.copy(alpha = 0.58f)
+    val BorderMuted = palette.schemeBorder.copy(alpha = 0.58f)
 
     val Scrim = NuvioPrimitives.black.copy(alpha = 0.62f)
     val ImageScrim = NuvioPrimitives.black.copy(alpha = 0.58f)

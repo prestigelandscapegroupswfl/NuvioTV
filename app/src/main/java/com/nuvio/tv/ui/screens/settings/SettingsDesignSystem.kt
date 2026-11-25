@@ -3,6 +3,9 @@
 package com.nuvio.tv.ui.screens.settings
 
 import com.nuvio.tv.ui.theme.NuvioTheme
+import com.nuvio.tv.ui.theme.titaniumSelectedFill
+import com.nuvio.tv.ui.theme.titaniumSelectedContainer
+
 
 import androidx.annotation.RawRes
 import androidx.compose.animation.animateColorAsState
@@ -401,7 +404,7 @@ internal fun SettingsRailButton(
         colors = CardDefaults.colors(
             containerColor = when {
                 zen -> Color.Transparent
-                showSelected -> NuvioTheme.colors.BackgroundCard
+                showSelected -> titaniumSelectedContainer(true, NuvioTheme.colors.BackgroundCard)
                 else -> NuvioTheme.colors.Background
             },
             focusedContainerColor = if (zen) settingsFocusFillColor() else NuvioTheme.colors.BackgroundCard
@@ -426,7 +429,11 @@ internal fun SettingsRailButton(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = SettingsRailItemHeight),
+                .heightIn(min = SettingsRailItemHeight)
+                .then(
+                    if (zen) Modifier
+                    else Modifier.titaniumSelectedFill(showSelected, railShape)
+                ),
             contentAlignment = Alignment.CenterStart
         ) {
             Row(
@@ -554,7 +561,7 @@ internal fun SettingsTopBarTab(
             },
         colors = CardDefaults.colors(
             containerColor = if (showSelected) {
-                NuvioTheme.colors.Secondary.copy(alpha = 0.18f)
+                titaniumSelectedContainer(true, NuvioTheme.colors.Secondary.copy(alpha = 0.18f))
             } else {
                 Color.Transparent
             },
@@ -569,7 +576,9 @@ internal fun SettingsTopBarTab(
         scale = CardDefaults.scale(focusedScale = 1f, pressedScale = 1f)
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 18.dp, vertical = 10.dp),
+            modifier = Modifier
+                .titaniumSelectedFill(showSelected, RoundedCornerShape(SettingsPillRadius))
+                .padding(horizontal = 18.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (rawIconRes != null) {

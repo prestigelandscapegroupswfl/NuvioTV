@@ -168,6 +168,7 @@ import com.nuvio.tv.data.repository.MemberAccessRepository
 import com.nuvio.tv.data.remote.supabase.AvatarRepository
 import com.nuvio.tv.domain.model.AppFont
 import com.nuvio.tv.domain.model.AppTheme
+import com.nuvio.tv.domain.model.HomeLayout
 import com.nuvio.tv.domain.model.CustomThemeColors
 import com.nuvio.tv.domain.model.AuthState
 import com.nuvio.tv.domain.model.CardDepthStyle
@@ -184,6 +185,8 @@ import com.nuvio.tv.domain.deeplink.AppDeepLink
 import com.nuvio.tv.domain.repository.AddonRepository
 import com.nuvio.tv.ui.components.NuvioScrollDefaults
 import com.nuvio.tv.ui.components.BrandWordmark
+import androidx.compose.ui.layout.ContentScale
+import com.nuvio.tv.ui.components.LocalBrandWordmarkOverride
 import com.nuvio.tv.ui.components.LocalCardDepthStyle
 import com.nuvio.tv.ui.components.LocalLandscapePosterMode
 import com.nuvio.tv.ui.components.LocalAlwaysBackdropWithLogo
@@ -246,7 +249,11 @@ data class DrawerItem(
     val route: String,
     val label: String,
     val iconRes: Int? = null,
-    val icon: ImageVector? = null
+    val icon: ImageVector? = null,
+    // Titanium X: Jay's custom glossy bitmap icon. Rendered instead of
+    // [icon]/[iconRes] while the Titanium X experience is active (the same
+    // signal that drives LocalBrandWordmarkOverride); ignored otherwise.
+    val titaniumIconRes: Int? = null
 )
 
 private data class MainUiPrefs(
@@ -710,7 +717,24 @@ open class MainActivity : ComponentActivity() {
                         brandWordmarkRes = resolvedTheme.brandWordmarkResource
                     )
                 }
+                // Titanium X branding: when the Titanium X theme or the
+                // Titanium X home layout is active, every wordmark surface
+                // (sidebar headers, splash, profile selection) must show the
+                // Titanium X wordmark — the profile's colour theme alone
+                // would otherwise leak the stock "nuvio" wordmark into the
+                // sidebar header whenever it isn't the Titanium X theme.
+                val homeLayout by layoutPreferenceDataStore.selectedLayout
+                    .collectAsState(initial = HomeLayout.TITANIUM_X)
+                val brandWordmarkOverride = if (
+                    mainUiPrefs.theme == AppTheme.TITANIUM_X ||
+                    homeLayout == HomeLayout.TITANIUM_X
+                ) {
+                    R.drawable.app_logo_wordmark_titanium_x
+                } else {
+                    null
+                }
                 CompositionLocalProvider(
+                    LocalBrandWordmarkOverride provides brandWordmarkOverride,
                     LocalDensity provides clampedFontScaleDensity,
                     LocalBringIntoViewSpec provides bringIntoViewSpec,
                     LocalFastHorizontalNavigationEnabled provides mainUiPrefs.fastHorizontalNavigationEnabled,
@@ -1100,47 +1124,56 @@ open class MainActivity : ComponentActivity() {
                             DrawerItem(
                                 route = Screen.Home.route,
                                 label = strNavHome,
-                                icon = Icons.Default.Home
+                                icon = Icons.Default.Home,
+                                titaniumIconRes = R.drawable.nav_icon_home
                             ),
                             DrawerItem(
                                 route = Screen.DiscoverMovies.route,
                                 label = strNavMovies,
-                                icon = Icons.Default.Movie
+                                icon = Icons.Default.Movie,
+                                titaniumIconRes = R.drawable.nav_icon_movies
                             ),
                             DrawerItem(
                                 route = Screen.DiscoverSeries.route,
                                 label = strNavTvShows,
-                                icon = Icons.Default.Tv
+                                icon = Icons.Default.Tv,
+                                titaniumIconRes = R.drawable.nav_icon_tvshows
                             ),
                             DrawerItem(
                                 route = Screen.TitaniumGenres.route,
                                 label = strNavGenres,
-                                icon = Icons.Default.Layers
+                                icon = Icons.Default.Layers,
+                                titaniumIconRes = R.drawable.nav_icon_genres
                             ),
                             DrawerItem(
                                 route = Screen.TitaniumCollections.route,
                                 label = strNavCollections,
-                                icon = Icons.Default.VideoLibrary
+                                icon = Icons.Default.VideoLibrary,
+                                titaniumIconRes = R.drawable.nav_icon_collections
                             ),
                             DrawerItem(
                                 route = Screen.TitaniumDecades.route,
                                 label = strNavDecades,
-                                icon = Icons.Default.CalendarMonth
+                                icon = Icons.Default.CalendarMonth,
+                                titaniumIconRes = R.drawable.nav_icon_decades
                             ),
                             DrawerItem(
                                 route = Screen.Library.route,
                                 label = strNavMyLists,
-                                icon = Icons.Default.Favorite
+                                icon = Icons.Default.Favorite,
+                                titaniumIconRes = R.drawable.nav_icon_mylists
                             ),
                             DrawerItem(
                                 route = Screen.AddonManager.route,
                                 label = strNavAddons,
-                                icon = Icons.Default.Extension
+                                icon = Icons.Default.Extension,
+                                titaniumIconRes = R.drawable.nav_icon_addons
                             ),
                             DrawerItem(
                                 route = Screen.Settings.route,
                                 label = strNavSettings,
-                                icon = Icons.Default.Settings
+                                icon = Icons.Default.Settings,
+                                titaniumIconRes = R.drawable.nav_icon_settings
                             )
                         )
                     }
@@ -1647,6 +1680,7 @@ private fun LegacySidebarScaffold(
                                     label = item.label,
                                     iconRes = item.iconRes,
                                     icon = item.icon,
+                                    titaniumIconRes = item.titaniumIconRes,
                                     selected = selectedDrawerRoute == item.route,
                                     expanded = isExpanded,
                                     onClick = {
@@ -1750,6 +1784,7 @@ private fun LegacySidebarButton(
     label: String,
     iconRes: Int?,
     icon: ImageVector?,
+    titaniumIconRes: Int? = null,
     selected: Boolean,
     expanded: Boolean,
     modifier: Modifier = Modifier,
@@ -1847,6 +1882,7 @@ private fun LegacySidebarButton(
         DrawerItemIcon(
             iconRes = iconRes,
             icon = icon,
+            titaniumIconRes = titaniumIconRes,
             tint = iconTint,
             brush = selectedCollapsedIconBrush,
             modifier = Modifier
@@ -2275,6 +2311,7 @@ private fun ModernSidebarScaffold(
                     label = selectedDrawerItem.label,
                     iconRes = selectedDrawerItem.iconRes,
                     icon = selectedDrawerItem.icon,
+                    titaniumIconRes = selectedDrawerItem.titaniumIconRes,
                     iconOnly = isFloatingPillIconOnly && !keepFloatingPillExpanded,
                     blurEnabled = modernSidebarBlurEnabled,
                     hazeState = if (modernSidebarBlurEnabled) sidebarHazeState else null,
@@ -2310,6 +2347,7 @@ private fun CollapsedSidebarPill(
     label: String,
     iconRes: Int?,
     icon: ImageVector?,
+    titaniumIconRes: Int? = null,
     iconOnly: Boolean,
     blurEnabled: Boolean,
     hazeState: HazeState? = null,
@@ -2372,6 +2410,7 @@ private fun CollapsedSidebarPill(
                     DrawerItemIcon(
                         iconRes = iconRes,
                         icon = icon,
+                        titaniumIconRes = titaniumIconRes,
                         tint = NuvioTheme.colors.text.onOverlay,
                         modifier = Modifier
                             .size(NuvioTheme.sizes.sidebar.leadingVisual - NuvioTheme.spacing.md)
@@ -2456,8 +2495,24 @@ private fun DrawerItemIcon(
     icon: ImageVector?,
     modifier: Modifier = Modifier,
     tint: Color = androidx.tv.material3.LocalContentColor.current,
-    brush: Brush? = null
+    brush: Brush? = null,
+    titaniumIconRes: Int? = null
 ) {
+    // Titanium X: while the Titanium X experience is active (same signal as
+    // the wordmark override), Jay's custom glossy bitmap icon replaces the
+    // tinted vector/SVG icon. The art is full-colour, so no tint or brush
+    // treatment applies; a small corner radius lets its dark corners blend
+    // into the sidebar panel.
+    val titaniumBitmapRes = if (LocalBrandWordmarkOverride.current != null) titaniumIconRes else null
+    if (titaniumBitmapRes != null) {
+        Image(
+            painter = painterResource(id = titaniumBitmapRes),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = modifier.clip(RoundedCornerShape(5.dp))
+        )
+        return
+    }
     val iconModifier = if (brush == null) {
         modifier
     } else {
