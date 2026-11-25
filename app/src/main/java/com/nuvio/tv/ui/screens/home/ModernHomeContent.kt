@@ -1044,7 +1044,15 @@ fun ModernHomeContent(
             }
 
             val localDensity = LocalDensity.current
-            val rowsViewportHeightFraction = if (useLandscapePosters) 0.49f else 0.52f
+            val cinemaShelves = carouselRows.list.any { row ->
+                isTitaniumCinemaShelf(row.title) &&
+                    row.items.list.firstOrNull()?.payload is ModernPayload.CollectionFolder
+            }
+            val rowsViewportHeightFraction = when {
+                cinemaShelves -> 0.66f
+                useLandscapePosters -> 0.49f
+                else -> 0.52f
+            }
             val rowsViewportHeight = remember(screenHeight, rowsViewportHeightFraction) { screenHeight * rowsViewportHeightFraction }
             val rowTitleLineHeight = MaterialTheme.typography.titleMedium.lineHeight
             val rowTitleHeight = remember(rowTitleLineHeight, localDensity) {
@@ -1138,7 +1146,7 @@ fun ModernHomeContent(
                 ?: carouselRows.list.firstOrNull()
             val focusedShelfItem = focusedHomeRow?.items?.list?.firstOrNull()
             val isCollectionShelf = focusedShelfItem?.payload is ModernPayload.CollectionFolder
-            val showTitaniumBanner = isCollectionShelf &&
+            val showTitaniumBanner = (isCollectionShelf || (cinemaShelves && activeRowKey.value == null)) &&
                 !shouldPlayCollectionHeroVideoUpdated && !shouldPlayCatalogHeroTrailerUpdated
             if (showTitaniumBanner) {
                 val bannerSurface = NuvioTheme.colors.Background
@@ -1255,6 +1263,7 @@ fun ModernHomeContent(
                 contentFocusRequester = contentFocusRequester,
                 rowsViewportHeight = rowsViewportHeight,
                 catalogBottomPadding = NuvioTheme.spacing.none,
+                cinemaCoverWidth = if (cinemaShelves) screenWidth * 0.173f else null,
                 trailerContentAlpha = stableTrailerContentAlphaLambda,
                 verticalRowBringIntoViewSpec = verticalRowBringIntoViewSpec,
                 onRowItemFocusedInternal = onRowItemFocusedInternalLambda,
