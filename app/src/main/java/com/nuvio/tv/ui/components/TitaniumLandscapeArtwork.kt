@@ -40,17 +40,28 @@ import com.nuvio.tv.ui.theme.NuvioTheme
 @OptIn(androidx.tv.material3.ExperimentalTvMaterial3Api::class)
 @Composable
 fun TitaniumLandscapeArtwork(folder: CollectionFolder, focused: Boolean) {
+    TitaniumLandscapeArtwork(folder.title, folder.heroBackdropUrl, folder.titleLogoUrl, focused)
+}
+
+@OptIn(androidx.tv.material3.ExperimentalTvMaterial3Api::class)
+@Composable
+internal fun TitaniumLandscapeArtwork(
+    title: String,
+    backdropUrl: String?,
+    logoUrl: String?,
+    focused: Boolean
+) {
     val palette = listOf(
         Color(0xFF36D8FF) to Color(0xFF8352ED),
         Color(0xFFFF579C) to Color(0xFF754ACF),
         Color(0xFFFF793F) to Color(0xFFDB346C),
         Color(0xFF2AE2B1) to Color(0xFF16779C)
     )
-    val (categoryAccent, categorySecondary) = palette[Math.floorMod(folder.title.hashCode(), palette.size)]
+    val (categoryAccent, categorySecondary) = palette[Math.floorMod(title.hashCode(), palette.size)]
     val accent = lerp(categoryAccent, NuvioTheme.palette.secondary, 0.2f)
     val secondary = lerp(categorySecondary, NuvioTheme.palette.secondaryVariant, 0.2f)
     Box(Modifier.fillMaxSize().background(Brush.linearGradient(listOf(Color(0xFF0B0B1C), secondary.copy(alpha = 0.55f), Color(0xFF070A15))))) {
-        folder.heroBackdropUrl?.takeIf { it.isNotBlank() }?.let { backdrop ->
+        backdropUrl?.takeIf { it.isNotBlank() }?.let { backdrop ->
             AsyncImage(model = backdrop, contentDescription = null, contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize())
         }
@@ -65,16 +76,16 @@ fun TitaniumLandscapeArtwork(folder: CollectionFolder, focused: Boolean) {
                 Offset(size.width * 0.07f, size.height * 0.86f), Offset(size.width * 0.93f, size.height * 0.86f),
                 strokeWidth = 2.dp.toPx(), cap = StrokeCap.Round)
         }
-        val logo = folder.titleLogoUrl?.takeIf { it.isNotBlank() }
+        val logo = logoUrl?.takeIf { it.isNotBlank() }
         if (logo != null) {
-            AsyncImage(model = logo, contentDescription = folder.title, contentScale = ContentScale.Fit,
+            AsyncImage(model = logo, contentDescription = title, contentScale = ContentScale.Fit,
                 modifier = Modifier.align(Alignment.Center).fillMaxWidth(0.76f).height(52.dp).padding(bottom = 10.dp))
         } else {
-            Text(text = folder.title.uppercase(), color = Color.White, fontSize = 22.sp,
+            Text(text = title.uppercase(), color = Color.White, fontSize = 22.sp,
                 fontWeight = FontWeight.Black, maxLines = 2, overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center, modifier = Modifier.align(Alignment.Center).padding(horizontal = 22.dp, vertical = 24.dp))
         }
-        Text(text = folder.title, color = Color.White.copy(alpha = 0.92f), fontSize = 11.sp,
+        Text(text = title, color = Color.White.copy(alpha = 0.92f), fontSize = 11.sp,
             fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center,
             modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(start = 18.dp, end = 18.dp, bottom = 7.dp))

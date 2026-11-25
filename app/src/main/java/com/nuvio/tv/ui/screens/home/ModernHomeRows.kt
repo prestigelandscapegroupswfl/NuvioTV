@@ -121,6 +121,8 @@ import com.nuvio.tv.ui.components.continueWatchingShouldBlur
 import com.nuvio.tv.ui.components.continueWatchingUsesEpisodeThumbnails
 import com.nuvio.tv.ui.components.LocalCardDepthStyle
 import com.nuvio.tv.ui.components.MonochromePosterPlaceholder
+import com.nuvio.tv.domain.model.PosterShape
+import com.nuvio.tv.ui.components.TitaniumLandscapeArtwork
 import com.nuvio.tv.ui.components.TrailerPlayer
 import com.nuvio.tv.ui.components.WatchedMarker
 import com.nuvio.tv.ui.components.placeholderCardShimmer
@@ -1150,7 +1152,10 @@ private fun ModernCarouselCard(
     val effectiveBackdropUrl = frozenBackdropUrl.value?.takeIf { !it.isPlaceholder() }
     var isFocused by remember { mutableStateOf(false) }
     val payload = item.payload as? ModernPayload.CollectionFolder
-    val isCollectionFolder = item.payload is ModernPayload.CollectionFolder
+    val isCollectionFolder = payload != null
+    val composedLandscape = payload != null &&
+        payload.posterShape == PosterShape.LANDSCAPE &&
+        !payload.hasCustomCover && payload.coverEmoji.isNullOrBlank() && item.title.isNotBlank()
     val effectiveIgnoreLandscapePoster = alwaysShowLandscapeClearlogo
     val useLandscapeAsExpanded = focusedPosterBackdropExpandEnabled && isBackdropExpanded &&
         !alwaysShowLandscapeClearlogo &&
@@ -1192,7 +1197,7 @@ private fun ModernCarouselCard(
         else -> null
     }
     val imageContentScale = when (item.payload) {
-        is ModernPayload.CollectionFolder -> ContentScale.FillBounds
+        is ModernPayload.CollectionFolder -> ContentScale.Fit
         else -> ContentScale.Crop
     }
     // Keep decode target stable across expand/collapse to avoid recreating image requests/painters
@@ -1406,6 +1411,13 @@ private fun ModernCarouselCard(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .placeholderCardShimmer(effectivePlaceholderShimmerOffsetState)
+                        )
+                    } else if (composedLandscape && payload != null) {
+                        TitaniumLandscapeArtwork(
+                            title = item.title,
+                            backdropUrl = payload.heroBackdropUrl ?: item.heroPreview.backdrop,
+                            logoUrl = payload.titleLogoUrl,
+                            focused = isFocused && payload.focusGlowEnabled
                         )
                     } else if (hasImage) {
                         AsyncImage(

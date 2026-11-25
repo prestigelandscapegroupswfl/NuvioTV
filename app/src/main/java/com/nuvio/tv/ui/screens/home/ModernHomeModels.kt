@@ -92,7 +92,8 @@ sealed class ModernPayload {
         val heroBackdropUrl: String?,
         val heroVideoUrl: String?,
         val titleLogoUrl: String?,
-        val coverEmoji: String? = null
+        val coverEmoji: String? = null,
+        val hasCustomCover: Boolean = false
     ) : ModernPayload()
 }
 
@@ -580,7 +581,8 @@ internal fun buildCollectionFolderItem(
             heroBackdropUrl = folder.heroBackdropUrl,
             heroVideoUrl = folder.heroVideoUrl,
             titleLogoUrl = folder.titleLogoUrl,
-            coverEmoji = folder.coverEmoji
+            coverEmoji = folder.coverEmoji,
+            hasCustomCover = !folder.coverImageUrl.isNullOrBlank()
         )
     )
 }
