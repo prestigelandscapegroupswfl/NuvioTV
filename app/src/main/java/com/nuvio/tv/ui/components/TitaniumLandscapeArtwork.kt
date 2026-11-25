@@ -40,7 +40,13 @@ import com.nuvio.tv.ui.theme.NuvioTheme
 @OptIn(androidx.tv.material3.ExperimentalTvMaterial3Api::class)
 @Composable
 fun TitaniumLandscapeArtwork(folder: CollectionFolder, focused: Boolean) {
-    TitaniumLandscapeArtwork(folder.title, folder.heroBackdropUrl, folder.titleLogoUrl, focused)
+    TitaniumLandscapeArtwork(
+        title = folder.title,
+        backdropUrl = folder.heroBackdropUrl,
+        logoUrl = folder.titleLogoUrl,
+        focused = focused,
+        useTitaniumCover = folder.coverImageUrl.isNullOrBlank()
+    )
 }
 
 @OptIn(androidx.tv.material3.ExperimentalTvMaterial3Api::class)
@@ -49,8 +55,14 @@ internal fun TitaniumLandscapeArtwork(
     title: String,
     backdropUrl: String?,
     logoUrl: String?,
-    focused: Boolean
+    focused: Boolean,
+    useTitaniumCover: Boolean = true
 ) {
+    val cover = if (useTitaniumCover) titaniumCoverFor(title) else null
+    if (cover != null) {
+        TitaniumAnimatedCover(cover, focused)
+        return
+    }
     val palette = listOf(
         Color(0xFF36D8FF) to Color(0xFF8352ED),
         Color(0xFFFF579C) to Color(0xFF754ACF),
