@@ -39,7 +39,9 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.focusRestorer
@@ -48,6 +50,7 @@ import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.gestures.BringIntoViewSpec
 import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
 import androidx.compose.animation.core.AnimationSpec
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
@@ -61,6 +64,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
@@ -93,7 +97,7 @@ fun CollectionRowSection(
     onFolderFocused: (collection: Collection, folder: CollectionFolder) -> Unit = { _, _ -> },
     entryFocusRequester: FocusRequester? = null,
     rowFocusRequester: FocusRequester = remember { FocusRequester() },
-    animateStillCovers: Boolean = false
+    animateCovers: Boolean = false
 ) {
     val currentOnFolderClick by rememberUpdatedState(onFolderClick)
     val currentOnItemFocused by rememberUpdatedState(onItemFocused)
@@ -226,7 +230,7 @@ fun CollectionRowSection(
                         folder = folder,
                         collection = collection,
                         posterCardStyle = posterCardStyle,
-                        animateStillCovers = animateStillCovers,
+                        animateCovers = animateCovers,
                         onClick = remember(collection.id, folder.id) { { currentOnFolderClick(collection.id, folder.id) } },
                         onFocused = remember(index, folder.id) {
                             {
@@ -254,7 +258,7 @@ private fun FolderCard(
     folder: CollectionFolder,
     collection: Collection,
     posterCardStyle: PosterCardStyle,
-    animateStillCovers: Boolean,
+    animateCovers: Boolean,
     onClick: () -> Unit,
     onFocused: () -> Unit,
     modifier: Modifier = Modifier,
@@ -385,21 +389,44 @@ private fun FolderCard(
                 )
             }
 
-            if (animateStillCovers && isFocused && focusGifUrl.isNullOrBlank() && !useComposedLandscape) {
-                val transition = rememberInfiniteTransition(label = "coverFocus")
+            if (animateCovers && isFocused) {
+                val transition = rememberInfiniteTransition(label = "titaniumCoverFocus")
                 val glowOpacity by transition.animateFloat(
-                    initialValue = 0.12f,
-                    targetValue = 0.65f,
-                    animationSpec = infiniteRepeatable(tween(1250), RepeatMode.Reverse),
-                    label = "coverGlow"
+                    initialValue = 0.4f,
+                    targetValue = 0.95f,
+                    animationSpec = infiniteRepeatable(tween(1350), RepeatMode.Reverse),
+                    label = "glow"
                 )
+                val sweepPosition by transition.animateFloat(
+                    initialValue = -0.25f,
+                    targetValue = 1.25f,
+                    animationSpec = infiniteRepeatable(tween(2900, easing = LinearEasing)),
+                    label = "sheen"
+                )
+                val cyan = Color(0xFF45E8FF)
+                val pink = Color(0xFFF35AFF)
                 Canvas(Modifier.fillMaxSize()) {
-                    drawLine(
-                        brush = Brush.horizontalGradient(borderColors.map { it.copy(alpha = glowOpacity) }),
-                        start = Offset(size.width * 0.10f, size.height - 2.dp.toPx()),
-                        end = Offset(size.width * 0.90f, size.height - 2.dp.toPx()),
-                        strokeWidth = 2.dp.toPx()
+                    val center = size.width * sweepPosition
+                    val halfWidth = size.width * 0.19f
+                    drawRect(
+                        brush = Brush.linearGradient(
+                            colors = listOf(Color.Transparent, Color.White.copy(alpha = 0.13f), Color.Transparent),
+                            start = Offset(center - halfWidth, 0f),
+                            end = Offset(center + halfWidth, size.height * 0.28f)
+                        )
                     )
+                    val inset = 1.5.dp.toPx()
+                    if (size.width > inset * 2 && size.height > inset * 2) {
+                        drawRoundRect(
+                            brush = Brush.linearGradient(
+                                listOf(cyan.copy(alpha = glowOpacity), pink.copy(alpha = glowOpacity))
+                            ),
+                            topLeft = Offset(inset, inset),
+                            size = Size(size.width - inset * 2, size.height - inset * 2),
+                            cornerRadius = CornerRadius((posterCardStyle.cornerRadius.toPx() - inset).coerceAtLeast(0f)),
+                            style = Stroke(width = 1.4.dp.toPx())
+                        )
+                    }
                 }
             }
 

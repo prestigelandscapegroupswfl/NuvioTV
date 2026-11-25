@@ -1,8 +1,9 @@
-// Private Stremio-compatible pilot for one authorized Google Drive folder.
+// Private Stremio-compatible catalogs backed by authorized Shared Drive folders.
 const DRIVE = "https://www.googleapis.com/drive/v3/files";
 const FOLDER = "application/vnd.google-apps.folder";
 const CATALOG = "titanium-drive-marvel";
 const IDENTIFIER = /^[A-Za-z0-9_-]{8,128}$/;
+const COLLECTION_ID = /^[a-z][a-z0-9-]{1,62}$/;
 const NO_CACHE = "private, no-store";
 
 let tokenCache;
@@ -34,8 +35,30 @@ async function getAccessToken(env) {
     return token;
 }
 
-async function browse(env, token) {
-    const queue = [env.DRIVE_FOLDER_ID];
+function configuredCollections(env) {
+    if (!env.DRIVE_COLLECTIONS_JSON) {
+        if (!IDENTIFIER.test(env.DRIVE_FOLDER_ID ?? "")) throw new Error("Missing folder");
+        return new Map([[CATALOG, { id: CATALOG, name: "Marvel MCU", folderId: env.DRIVE_FOLDER_ID }]]);
+    }
+    const entries = JSON.parse(env.DRIVE_COLLECTIONS_JSON);
+    if (!Array.isArray(entries) || entries.length === 0 || entries.length > 100) {
+        throw new Error("Invalid collection configuration");
+    }
+    const collections = new Map();
+    for (const entry of entries) {
+        if (typeof entry?.id !== "string" || !COLLECTION_ID.test(entry.id) ||
+            typeof entry.name !== "string" || !entry.name.trim() || entry.name.length > 120 ||
+            typeof entry.folderId !== "string" || !IDENTIFIER.test(entry.folderId) ||
+            collections.has(entry.id)) {
+            throw new Error("Invalid or duplicate collection");
+        }
+        collections.set(entry.id, { id: entry.id, name: entry.name.trim(), folderId: entry.folderId });
+    }
+    return collections;
+}
+
+async function browse(env, token, folderId, skip) {
+    const queue = [folderId];
     const visited = new Set();
     const movies = new Map();
     let pages = 0;
@@ -45,9 +68,10 @@ async function browse(env, token) {
         visited.add(parent);
         let pageToken;
         do {
-            if (++pages > 100) throw new Error("Pilot folder exceeds the listing limit");
+            if (++pages > 45) throw new Error("Collection exceeds the listing limit");
             const params = new URLSearchParams({
                 q: `'${parent}' in parents and trashed = false`,
+                orderBy: "name_natural",
                 corpora: "drive",
                 driveId: env.SHARED_DRIVE_ID,
                 includeItemsFromAllDrives: "true",
@@ -66,17 +90,48 @@ async function browse(env, token) {
                 if (file.mimeType === FOLDER) queue.push(file.id);
                 else if (file.mimeType?.startsWith("video/") && file.capabilities?.canDownload === true) {
                     movies.set(file.id, file);
+                    if (movies.size >= skip + 100) return [...movies.values()].slice(skip);
                 }
             }
             pageToken = page.nextPageToken;
         } while (pageToken);
     }
-    return movies;
+    return [...movies.values()].slice(skip);
 }
 
-function movieMeta(file) {
+async function movieInCollection(env, token, folderId, id) {
+    const params = new URLSearchParams({
+        supportsAllDrives: "true",
+        fields: "id,name,mimeType,parents,driveId,trashed,capabilities(canDownload)"
+    });
+    const headers = { Authorization: `Bearer ${token}` };
+    let movie;
+    const visited = new Set();
+    for (let fileId = id; IDENTIFIER.test(fileId ?? "") && visited.size < 40;) {
+        if (fileId === folderId) return movie;
+        if (visited.has(fileId)) return undefined;
+        visited.add(fileId);
+        const response = await fetch(`${DRIVE}/${fileId}?${params}`, { headers });
+        if (response.status === 404) return undefined;
+        if (!response.ok) throw new Error("Drive file lookup failed");
+        const file = await response.json();
+        if (file.id !== fileId || file.trashed || file.driveId !== env.SHARED_DRIVE_ID) return undefined;
+        if (!movie) {
+            if (!file.mimeType?.startsWith("video/") || file.capabilities?.canDownload !== true) {
+                return undefined;
+            }
+            movie = file;
+        } else if (file.mimeType !== FOLDER) {
+            return undefined;
+        }
+        fileId = file.parents?.[0];
+    }
+    return undefined;
+}
+
+function movieMeta(file, collection) {
     return {
-        id: `txdrive:${file.id}`,
+        id: collection.id === CATALOG ? `txdrive:${file.id}` : `txdrive:${collection.id}:${file.id}`,
         type: "movie",
         name: file.name.replace(/\.[^.]+$/, "")
     };
@@ -91,42 +146,56 @@ export default {
             return json({ error: "Not found" }, 404);
         }
 
+        let collections;
+        try {
+            collections = configuredCollections(env);
+        } catch {
+            return json({ error: "Drive collection setup is incomplete" }, 503);
+        }
         const route = parts.join("/");
         if (route === "manifest.json") {
             return json({
                 id: "com.titaniumx.private.drive.pilot",
-                version: "0.1.0",
+                version: "0.2.0",
                 name: "Titanium X Private Drive",
-                description: "Browse the authorized Marvel MCU pilot folder.",
+                description: "Browse the authorized Shared Drive collections.",
                 resources: ["catalog", "meta", "stream"],
                 types: ["movie"],
                 idPrefixes: ["txdrive:"],
-                catalogs: [{ type: "movie", id: CATALOG, name: "Marvel MCU" }]
+                catalogs: [...collections.values()].map(({ id, name }) => ({
+                    type: "movie", id, name, extra: [{ name: "skip", isRequired: false }]
+                }))
             });
         }
-
-        const item = /^(meta|stream)\/movie\/txdrive(?::|%3A)([A-Za-z0-9_-]{8,128})\.json$/i.exec(route);
-        const playback = /^play\/([A-Za-z0-9_-]{8,128})$/.exec(route);
-        if (route !== `catalog/movie/${CATALOG}.json` && !item && !playback) {
-            return json({ error: "Not found" }, 404);
-        }
-        if (!IDENTIFIER.test(env.DRIVE_FOLDER_ID) || !IDENTIFIER.test(env.SHARED_DRIVE_ID) ||
+        const catalog = /^catalog\/movie\/([a-z0-9-]+)(?:\/skip=(\d+))?\.json$/.exec(route);
+        const item = /^(meta|stream)\/movie\/txdrive(?::|%3A)(?:([a-z0-9-]+)(?::|%3A))?([A-Za-z0-9_-]{8,128})\.json$/i.exec(route);
+        const playback = /^play\/(?:(?<collection>[a-z0-9-]+)\/)?(?<fileId>[A-Za-z0-9_-]{8,128})$/.exec(route);
+        const collection = collections.get(catalog?.[1] ?? item?.[2] ?? playback?.groups.collection ?? CATALOG);
+        if ((!catalog && !item && !playback) || !collection) return json({ error: "Not found" }, 404);
+        const skip = Number(catalog?.[2] ?? 0);
+        if (!Number.isSafeInteger(skip) || skip > 4000) return json({ metas: [] });
+        if (!IDENTIFIER.test(env.SHARED_DRIVE_ID ?? "") ||
             !env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET || !env.GOOGLE_REFRESH_TOKEN) {
             return json({ error: "Drive pilot setup is incomplete" }, 503);
         }
 
         try {
             const token = await getAccessToken(env);
-            const movies = await browse(env, token);
-            if (!item && !playback) return json({ metas: [...movies.values()].map(movieMeta) });
+            if (catalog) {
+                const movies = await browse(env, token, collection.folderId, skip);
+                return json({ metas: movies.map(file => movieMeta(file, collection)) });
+            }
 
             // A valid add-on key alone never allows reading a file outside the selected folder.
-            const file = movies.get(item?.[2] ?? playback?.[1]);
+            const file = await movieInCollection(
+                env, token, collection.folderId, item?.[3] ?? playback?.groups.fileId
+            );
             if (!file) return json({ error: "File not found" }, 404);
-            if (item?.[1] === "meta") return json({ meta: movieMeta(file) });
+            if (item?.[1] === "meta") return json({ meta: movieMeta(file, collection) });
             if (item?.[1] === "stream") {
+                const path = collection.id === CATALOG ? file.id : `${collection.id}/${file.id}`;
                 return json({
-                    streams: [{ name: "Shared Drive", url: `${url.origin}/${key}/play/${file.id}` }]
+                    streams: [{ name: "Shared Drive", url: `${url.origin}/${key}/play/${path}` }]
                 });
             }
 

@@ -323,7 +323,7 @@ internal fun TitaniumHomeContent(
                                 collection = styledCollection,
                                 onFolderClick = onNavigateToFolderDetail,
                                 posterCardStyle = posterCardStyle,
-                                animateStillCovers = true
+                                animateCovers = true
                             )
                         }
                         is HomeRow.PlaceholderCatalog -> {
