@@ -20,7 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
@@ -30,6 +29,7 @@ import androidx.tv.material3.CardDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import coil3.compose.AsyncImage
 import com.nuvio.tv.ui.theme.NuvioTheme
+import com.nuvio.tv.ui.theme.accentBrush
 
 /**
  * Titanium X category tiles (Genres / Collections / Decades), matching the
@@ -98,13 +98,7 @@ private fun tileUrl(name: String): String =
 
 /** Cyan -> violet -> magenta neon gradient used for tile borders and glow. */
 @Composable
-fun titaniumGradientBrush(): Brush = Brush.horizontalGradient(
-    colors = listOf(
-        Color(0xFF22D3EE),
-        Color(0xFF8B5CF6),
-        Color(0xFFE879F9)
-    )
-)
+fun titaniumGradientBrush(): Brush = NuvioTheme.palette.accentBrush()
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
@@ -147,11 +141,9 @@ fun TitaniumTileCard(
                     Modifier
                         .background(
                             brush = Brush.horizontalGradient(
-                                colors = listOf(
-                                    Color(0x5522D3EE),
-                                    Color(0x558B5CF6),
-                                    Color(0x55E879F9)
-                                )
+                                colors = NuvioTheme.palette.accentGradient.map {
+                                    it.copy(alpha = 0.33f)
+                                }
                             ),
                             shape = shape
                         )

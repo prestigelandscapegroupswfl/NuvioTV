@@ -23,7 +23,18 @@ data class ThemeColorPalette(
     val field: Color = NuvioPrimitives.neutral850,
     val menu: Color = NuvioPrimitives.neutral875,
     val modal: Color = NuvioPrimitives.neutral900,
-    val playerOverlay: Color = Color(0xCC000000)
+    val playerOverlay: Color = Color(0xCC000000),
+    // Full-pass tokens: NuvioColorScheme used to hardcode these to neutral grays
+    // for every theme, which left Titanium X screens with gray accents, text and
+    // borders. Defaults reproduce the old scheme exactly; Titanium X overrides
+    // them so the whole app reads in its cyan/violet/magenta-on-navy language.
+    val primary: Color = NuvioPrimitives.neutral500,
+    val primaryVariant: Color = NuvioPrimitives.neutral650,
+    val textSecondary: Color = NuvioPrimitives.neutral400,
+    val textTertiary: Color = NuvioPrimitives.neutral600,
+    val textDisabled: Color = NuvioPrimitives.neutral700,
+    val schemeBorder: Color = NuvioPrimitives.neutral750,
+    val schemeDivider: Color = NuvioPrimitives.neutral750
 )
 
 object ThemeColors {
@@ -54,7 +65,14 @@ object ThemeColors {
         panel = Color(0xFF0A1024),
         field = Color(0xFF0D1530),
         menu = Color(0xFF0B1226),
-        modal = Color(0xFF0A1024)
+        modal = Color(0xFF0A1024),
+        primary = Color(0xFF22D3EE),
+        primaryVariant = Color(0xFFE879F9),
+        textSecondary = Color(0xFFB9C8E8),
+        textTertiary = Color(0xFF7F90B8),
+        textDisabled = Color(0xFF526180),
+        schemeBorder = Color(0xFF2B3D66),
+        schemeDivider = Color(0xFF22345C)
     )
 
     val Crimson = ThemeColorPalette(

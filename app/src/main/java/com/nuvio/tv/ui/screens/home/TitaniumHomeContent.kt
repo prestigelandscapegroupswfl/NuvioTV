@@ -52,6 +52,7 @@ import com.nuvio.tv.ui.screens.titanium.TitaniumSection
 import com.nuvio.tv.ui.screens.titanium.TitaniumTile
 import com.nuvio.tv.ui.screens.titanium.TitaniumTileCard
 import com.nuvio.tv.ui.theme.NuvioTheme
+import com.nuvio.tv.ui.theme.titaniumScreenBackground
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -151,7 +152,7 @@ fun TitaniumHomeContent(
         state = listState,
         modifier = Modifier
             .fillMaxSize()
-            .background(NuvioTheme.colors.Background),
+            .titaniumScreenBackground(),
         contentPadding = PaddingValues(bottom = 56.dp),
         verticalArrangement = Arrangement.spacedBy(30.dp)
     ) {

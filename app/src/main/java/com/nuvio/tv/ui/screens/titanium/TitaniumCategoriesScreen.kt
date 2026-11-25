@@ -17,13 +17,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import com.nuvio.tv.ui.theme.NuvioTheme
+import com.nuvio.tv.ui.theme.accentBrush
+import com.nuvio.tv.ui.theme.titaniumScreenBackground
 
 /**
  * Full-screen grid for one Titanium X category section (Genres, Collections
@@ -37,7 +37,7 @@ fun TitaniumCategoriesScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(NuvioTheme.colors.Background)
+            .titaniumScreenBackground()
             .padding(horizontal = 48.dp, vertical = 32.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -46,9 +46,7 @@ fun TitaniumCategoriesScreen(
                     .width(5.dp)
                     .height(30.dp)
                     .background(
-                        brush = Brush.verticalGradient(
-                            colors = listOf(Color(0xFF22D3EE), Color(0xFFE879F9))
-                        ),
+                        brush = NuvioTheme.palette.accentBrush(),
                         shape = RoundedCornerShape(3.dp)
                     )
             )

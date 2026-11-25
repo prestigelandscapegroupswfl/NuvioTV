@@ -6,6 +6,7 @@ import com.nuvio.tv.ui.navigation.LocalDetailChildOverlayVisible
 import android.widget.Toast
 
 import com.nuvio.tv.ui.theme.NuvioTheme
+import com.nuvio.tv.ui.theme.titaniumScreenBackground
 import com.nuvio.tv.ui.theme.NuvioMotion
 
 import android.view.KeyEvent
@@ -573,7 +574,7 @@ fun MetaDetailsScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(NuvioTheme.colors.Background)
+            .titaniumScreenBackground()
             .onPreviewKeyEvent { keyEvent ->
                 if (currentIsTrailerPlaying) {
                     if (currentShowTrailerControls) {
