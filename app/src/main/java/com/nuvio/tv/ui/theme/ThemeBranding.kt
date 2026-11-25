@@ -7,6 +7,7 @@ import com.nuvio.tv.domain.model.AppTheme
 @get:DrawableRes
 val AppTheme.brandWordmarkResource: Int
     get() = when (this) {
+        AppTheme.TITANIUM_X -> R.drawable.app_logo_wordmark_titanium_x
         AppTheme.GOLD -> R.drawable.app_logo_wordmark_gold
         AppTheme.JADE -> R.drawable.app_logo_wordmark_jade
         AppTheme.ROSE_GOLD -> R.drawable.app_logo_wordmark_rose_gold

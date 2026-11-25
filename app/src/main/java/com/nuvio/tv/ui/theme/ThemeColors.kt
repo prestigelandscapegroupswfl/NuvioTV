@@ -27,6 +27,36 @@ data class ThemeColorPalette(
 )
 
 object ThemeColors {
+    /**
+     * Titanium X brand palette: neon cyan -> violet -> magenta on deep navy,
+     * matching the Titanium X home mockup. This is the fork's default theme.
+     */
+    val TitaniumX = ThemeColorPalette(
+        secondary = Color(0xFF8B5CF6),
+        secondaryVariant = Color(0xFF7C3AED),
+        accentGradient = listOf(
+            Color(0xFF22D3EE),
+            Color(0xFF8B5CF6),
+            Color(0xFFE879F9)
+        ),
+        focusRing = Color(0xFF22D3EE),
+        focusRingGradient = listOf(
+            Color(0xFF22D3EE),
+            Color(0xFF8B5CF6),
+            Color(0xFFE879F9)
+        ),
+        focusBackground = Color(0xFF1B1140),
+        background = Color(0xFF050914),
+        backgroundElevated = Color(0xFF0A1024),
+        backgroundCard = Color(0xFF0D1530),
+        surface = Color(0xFF0B1226),
+        surfaceVariant = Color(0xFF131E3D),
+        panel = Color(0xFF0A1024),
+        field = Color(0xFF0D1530),
+        menu = Color(0xFF0B1226),
+        modal = Color(0xFF0A1024)
+    )
+
     val Crimson = ThemeColorPalette(
         secondary = NuvioPrimitives.red500,
         secondaryVariant = NuvioPrimitives.red600,
@@ -96,6 +126,7 @@ object ThemeColors {
         customColors: CustomThemeColors = CustomThemeColors.Default
     ): ThemeColorPalette {
         return when (theme) {
+            AppTheme.TITANIUM_X -> TitaniumX
             AppTheme.CUSTOM -> customColors.toColorPalette()
             AppTheme.GOLD -> SupporterThemeColors.Gold
             AppTheme.JADE -> SupporterThemeColors.Jade
