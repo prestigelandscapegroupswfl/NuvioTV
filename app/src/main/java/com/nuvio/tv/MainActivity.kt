@@ -168,6 +168,7 @@ import com.nuvio.tv.data.repository.MemberAccessRepository
 import com.nuvio.tv.data.remote.supabase.AvatarRepository
 import com.nuvio.tv.domain.model.AppFont
 import com.nuvio.tv.domain.model.AppTheme
+import com.nuvio.tv.domain.model.HomeLayout
 import com.nuvio.tv.domain.model.CustomThemeColors
 import com.nuvio.tv.domain.model.AuthState
 import com.nuvio.tv.domain.model.CardDepthStyle
@@ -184,6 +185,7 @@ import com.nuvio.tv.domain.deeplink.AppDeepLink
 import com.nuvio.tv.domain.repository.AddonRepository
 import com.nuvio.tv.ui.components.NuvioScrollDefaults
 import com.nuvio.tv.ui.components.BrandWordmark
+import com.nuvio.tv.ui.components.LocalBrandWordmarkOverride
 import com.nuvio.tv.ui.components.LocalCardDepthStyle
 import com.nuvio.tv.ui.components.LocalLandscapePosterMode
 import com.nuvio.tv.ui.components.LocalAlwaysBackdropWithLogo
@@ -710,7 +712,24 @@ open class MainActivity : ComponentActivity() {
                         brandWordmarkRes = resolvedTheme.brandWordmarkResource
                     )
                 }
+                // Titanium X branding: when the Titanium X theme or the
+                // Titanium X home layout is active, every wordmark surface
+                // (sidebar headers, splash, profile selection) must show the
+                // Titanium X wordmark — the profile's colour theme alone
+                // would otherwise leak the stock "nuvio" wordmark into the
+                // sidebar header whenever it isn't the Titanium X theme.
+                val homeLayout by layoutPreferenceDataStore.selectedLayout
+                    .collectAsState(initial = HomeLayout.TITANIUM_X)
+                val brandWordmarkOverride = if (
+                    mainUiPrefs.theme == AppTheme.TITANIUM_X ||
+                    homeLayout == HomeLayout.TITANIUM_X
+                ) {
+                    R.drawable.app_logo_wordmark_titanium_x
+                } else {
+                    null
+                }
                 CompositionLocalProvider(
+                    LocalBrandWordmarkOverride provides brandWordmarkOverride,
                     LocalDensity provides clampedFontScaleDensity,
                     LocalBringIntoViewSpec provides bringIntoViewSpec,
                     LocalFastHorizontalNavigationEnabled provides mainUiPrefs.fastHorizontalNavigationEnabled,
