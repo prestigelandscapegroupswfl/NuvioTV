@@ -16,7 +16,7 @@ fun BrandWordmark(
     drawableOverride: Int? = null
 ) {
     Image(
-        painter = painterResource(id = R.drawable.titanium_wordmark),
+        painter = painterResource(id = R.drawable.titanium_chrome_wordmark),
         contentDescription = contentDescription,
         modifier = modifier,
         contentScale = contentScale,

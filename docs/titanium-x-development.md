@@ -41,3 +41,9 @@ Shield acceptance: launch alongside Nuvio; remote D-pad navigation/back; all six
 Original asset: Titanium X: Cinematic Neon Reveal.gif (nine frames, original timing), preserved byte-for-byte as app/src/main/res/raw/titanium_intro.gif. Intro overlay runs for at most six seconds; skip with the Shield remote or Back. It respects the existing startup splash setting. This is the original GIF; no sound asset was present.
 
 Native vector Titanium X wordmark, X launcher marks and TV banners replace default visual branding while preserving launcher color choices. Existing theme palettes, collections storage and artwork URLs remain unchanged. Upstream licenses and service/support attribution are retained.
+
+## Landscape presentation correction
+
+The owner-supplied chrome/cyan/purple/orange interface reference defines the visual direction. Titanium X chrome wordmark is a transparent project asset derived from that reference. Wide collection cards no longer use legacy cover images or their focus GIFs: they compose separate backdrops and fitted logos/native titles, with safe margins, themed gradient borders and focused neon motion. Original collection IDs/sources/assets remain preserved in backups. The new landscape preset is a separate import, not a destructive rewrite of the original exports. Poster and square tiles preserve their original fields and use Fit instead of stretching.
+
+Cloud build secrets are absent in this fork. Unconfigured builds use an inert .invalid endpoint to permit local/guest client initialization, with cloud login/watch-party capabilities disabled until a valid backend is configured. No service credentials are embedded or invented. ServerConfigurationBootstrapTest covers this startup boundary. Device behavior is still unverified.

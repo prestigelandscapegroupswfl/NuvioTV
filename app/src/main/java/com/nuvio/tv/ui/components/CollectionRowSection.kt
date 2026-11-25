@@ -54,6 +54,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
@@ -260,6 +261,9 @@ private fun FolderCard(
     }
 
     val shape = RoundedCornerShape(posterCardStyle.cornerRadius)
+    val borderColors = NuvioTheme.palette.accentGradient.let { colors ->
+        if (colors.size > 1) colors else listOf(colors.first(), colors.first())
+    }
     val cardDepthStyle = LocalCardDepthStyle.current
     val cardGlow = rememberArtworkBackedCardGlow(
         imageUrl = folder.coverImageUrl,
@@ -283,6 +287,10 @@ private fun FolderCard(
             focusedContainerColor = NuvioTheme.colors.BackgroundCard
         ),
         border = CardDefaults.border(
+            border = Border(
+                border = BorderStroke(1.dp, Brush.linearGradient(borderColors.map { it.copy(alpha = 0.5f) })),
+                shape = shape
+            ),
             focusedBorder = Border(
                 border = NuvioTheme.focusRing.border(posterCardStyle.focusedBorderWidth),
                 shape = shape
@@ -301,78 +309,82 @@ private fun FolderCard(
                     style = cardDepthStyle
                 )
         ) {
-            val activeImageUrl = collectionFolderCardImageUrl(folder, isFocused)
-            if (!activeImageUrl.isNullOrBlank()) {
-                AsyncImage(
-                    model = activeImageUrl,
-                    contentDescription = if (folder.hideTitle) folder.title else null,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(shape),
-                    contentScale = ContentScale.FillBounds
-                )
-            } else if (!folder.coverEmoji.isNullOrBlank()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = folder.coverEmoji,
-                        fontSize = 48.sp
-                    )
-                }
+            if (folder.tileShape == PosterShape.LANDSCAPE) {
+                TitaniumLandscapeArtwork(folder = folder, focused = isFocused)
             } else {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = folder.title.take(2).uppercase(),
-                        style = MaterialTheme.typography.headlineLarge,
-                        color = NuvioTheme.colors.TextSecondary
+                val activeImageUrl = collectionFolderCardImageUrl(folder, isFocused)
+                if (!activeImageUrl.isNullOrBlank()) {
+                    AsyncImage(
+                        model = activeImageUrl,
+                        contentDescription = if (folder.hideTitle) folder.title else null,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(shape),
+                        contentScale = ContentScale.Fit
+                    )
+                } else if (!folder.coverEmoji.isNullOrBlank()) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = folder.coverEmoji,
+                            fontSize = 48.sp
+                        )
+                    }
+                } else {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = folder.title.take(2).uppercase(),
+                            style = MaterialTheme.typography.headlineLarge,
+                            color = NuvioTheme.colors.TextSecondary
+                        )
+                    }
+                }
+
+                // GIF overlay: show on top of cover image or emoji, visible only once loaded
+                val focusGifUrl = if (isFocused && folder.focusGifEnabled) folder.focusGifUrl else null
+                if (!focusGifUrl.isNullOrBlank()) {
+                    var gifLoaded by remember(focusGifUrl) { mutableStateOf(false) }
+                    val gifAlpha by animateFloatAsState(
+                        targetValue = if (gifLoaded) 1f else 0f,
+                        animationSpec = tween(durationMillis = 200),
+                        label = "gifFadeIn"
+                    )
+                    AsyncImage(
+                        model = focusGifUrl,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(shape)
+                            .graphicsLayer { alpha = gifAlpha },
+                        contentScale = ContentScale.Fit,
+                        onSuccess = { gifLoaded = true }
                     )
                 }
-            }
 
-            // GIF overlay: show on top of cover image or emoji, visible only once loaded
-            val focusGifUrl = if (isFocused && folder.focusGifEnabled) folder.focusGifUrl else null
-            if (!focusGifUrl.isNullOrBlank()) {
-                var gifLoaded by remember(focusGifUrl) { mutableStateOf(false) }
-                val gifAlpha by animateFloatAsState(
-                    targetValue = if (gifLoaded) 1f else 0f,
-                    animationSpec = tween(durationMillis = 200),
-                    label = "gifFadeIn"
-                )
-                AsyncImage(
-                    model = focusGifUrl,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(shape)
-                        .graphicsLayer { alpha = gifAlpha },
-                    contentScale = ContentScale.FillBounds,
-                    onSuccess = { gifLoaded = true }
-                )
-            }
-
-            if (!folder.hideTitle) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .align(Alignment.BottomCenter)
-                        .padding(NuvioTheme.spacing.sm),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = folder.title,
-                        style = MaterialTheme.typography.labelMedium.copy(
-                            textDirection = folder.title.contentTextDirection()
-                        ),
-                        color = Color.White,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center
-                    )
+                if (!folder.hideTitle) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.BottomCenter)
+                            .padding(NuvioTheme.spacing.sm),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = folder.title,
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                textDirection = folder.title.contentTextDirection()
+                            ),
+                            color = Color.White,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
             }
         }
