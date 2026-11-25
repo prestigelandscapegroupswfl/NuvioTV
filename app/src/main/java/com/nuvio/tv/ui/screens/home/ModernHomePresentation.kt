@@ -34,7 +34,7 @@ internal fun buildModernHomePresentation(
     context: Context,
     maxCatalogRows: Int? = null
 ): ModernHomePresentationState {
-    val visibleHomeRows = resolveVisibleHomeRows(input)
+    val visibleHomeRows = resolveVisibleHomeRows(input).sortedBy(::titaniumShelfPriority)
     val localizedContext = context.withAppLocale()
     val strContinueWatching = localizedContext.getString(R.string.continue_watching)
     val strAirsDate = localizedContext.getString(R.string.cw_airs_date)
@@ -328,11 +328,36 @@ internal fun buildModernHomePresentation(
         cache.collectionRows.keys.retainAll(activeCollectionKeys)
     }
 
-    val lookups = buildCarouselRowLookups(rows)
+    val featuredOrder = visibleHomeRows
+        .filterIsInstance<HomeRow.CollectionRow>()
+        .associate { collectionRowKey(it.collection) to titaniumShelfPriority(it) }
+    val displayRows = if (visibleHomeRows.any {
+            it is HomeRow.CollectionRow && isTitaniumCinemaShelf(it.collection.title)
+        }) {
+        rows.sortedBy { featuredOrder[it.key] ?: 4 }
+    } else {
+        rows
+    }
+    val lookups = buildCarouselRowLookups(displayRows)
     return ModernHomePresentationState(
-        rows = rows.asStable(),
+        rows = displayRows.asStable(),
         lookups = lookups
     )
+}
+
+private fun titaniumShelfPriority(row: HomeRow): Int {
+    val collection = (row as? HomeRow.CollectionRow)?.collection ?: return 4
+    if (collection.pinToTop) return 0
+    return titaniumCinemaShelfOrder(collection.title)
+}
+
+internal fun isTitaniumCinemaShelf(title: String): Boolean = titaniumCinemaShelfOrder(title) < 4
+
+private fun titaniumCinemaShelfOrder(title: String): Int = when (title.trim().lowercase()) {
+    "genres" -> 1
+    "collections", "boxsets & collections" -> 2
+    "decades" -> 3
+    else -> 4
 }
 
 private fun resolveVisibleHomeRows(input: ModernHomePresentationInput): List<HomeRow> {

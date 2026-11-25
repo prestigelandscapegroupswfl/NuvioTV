@@ -59,20 +59,25 @@ class ServerConfigurationStore @Inject constructor(
             .clear()
             .commit()
 
-    private fun officialConfiguration() = ServerConfiguration(
-        backendUrl = BuildConfig.SUPABASE_URL.trimEnd('/'),
-        publishableKey = BuildConfig.SUPABASE_ANON_KEY,
-        capabilities = ServerCapabilities(
-            emailPasswordAuth = false,
-            tvLogin = true,
-            watchParty = true
-        ),
-        isCustom = false,
-        fallbackBackendUrl = BuildConfig.SUPABASE_FALLBACK_URL.trim().trimEnd('/').takeIf { it.isNotBlank() },
-        tvLoginWebBaseUrl = BuildConfig.TV_LOGIN_WEB_BASE_URL,
-        deviceLoginWebBaseUrl = BuildConfig.DEVICE_LOGIN_WEB_BASE_URL,
-        avatarPublicBaseUrl = BuildConfig.AVATAR_PUBLIC_BASE_URL.trimEnd('/').takeIf { it.isNotBlank() }
-    )
+    private fun officialConfiguration(): ServerConfiguration {
+        // Forks do not inherit upstream repository secrets. Keep local/guest startup
+        // valid without pretending that cloud authentication has been configured.
+        val cloudConfigured = BuildConfig.SUPABASE_URL.isNotBlank() && BuildConfig.SUPABASE_ANON_KEY.isNotBlank()
+        return ServerConfiguration(
+            backendUrl = BuildConfig.SUPABASE_URL.trimEnd('/').ifBlank { "https://configuration-required.invalid" },
+            publishableKey = BuildConfig.SUPABASE_ANON_KEY.ifBlank { "configuration-required" },
+            capabilities = ServerCapabilities(
+                emailPasswordAuth = false,
+                tvLogin = cloudConfigured,
+                watchParty = cloudConfigured
+            ),
+            isCustom = false,
+            fallbackBackendUrl = BuildConfig.SUPABASE_FALLBACK_URL.trim().trimEnd('/').takeIf { it.isNotBlank() },
+            tvLoginWebBaseUrl = BuildConfig.TV_LOGIN_WEB_BASE_URL,
+            deviceLoginWebBaseUrl = BuildConfig.DEVICE_LOGIN_WEB_BASE_URL,
+            avatarPublicBaseUrl = BuildConfig.AVATAR_PUBLIC_BASE_URL.trimEnd('/').takeIf { it.isNotBlank() }
+        )
+    }
 
     private companion object {
         const val PREFERENCES_NAME = "server_configuration"

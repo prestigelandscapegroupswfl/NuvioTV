@@ -10,6 +10,7 @@ import com.nuvio.tv.ui.theme.NuvioTheme
 import com.nuvio.tv.ui.util.contentTextDirection
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,6 +39,9 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.focusRestorer
@@ -46,7 +50,12 @@ import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.gestures.BringIntoViewSpec
 import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
 import androidx.compose.animation.core.AnimationSpec
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalDensity
@@ -54,6 +63,8 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
@@ -85,7 +96,8 @@ fun CollectionRowSection(
     onItemFocused: (itemIndex: Int) -> Unit = {},
     onFolderFocused: (collection: Collection, folder: CollectionFolder) -> Unit = { _, _ -> },
     entryFocusRequester: FocusRequester? = null,
-    rowFocusRequester: FocusRequester = remember { FocusRequester() }
+    rowFocusRequester: FocusRequester = remember { FocusRequester() },
+    animateCovers: Boolean = false
 ) {
     val currentOnFolderClick by rememberUpdatedState(onFolderClick)
     val currentOnItemFocused by rememberUpdatedState(onItemFocused)
@@ -218,6 +230,7 @@ fun CollectionRowSection(
                         folder = folder,
                         collection = collection,
                         posterCardStyle = posterCardStyle,
+                        animateCovers = animateCovers,
                         onClick = remember(collection.id, folder.id) { { currentOnFolderClick(collection.id, folder.id) } },
                         onFocused = remember(index, folder.id) {
                             {
@@ -245,6 +258,7 @@ private fun FolderCard(
     folder: CollectionFolder,
     collection: Collection,
     posterCardStyle: PosterCardStyle,
+    animateCovers: Boolean,
     onClick: () -> Unit,
     onFocused: () -> Unit,
     modifier: Modifier = Modifier,
@@ -260,6 +274,9 @@ private fun FolderCard(
     }
 
     val shape = RoundedCornerShape(posterCardStyle.cornerRadius)
+    val borderColors = NuvioTheme.palette.accentGradient.let { colors ->
+        if (colors.size > 1) colors else listOf(colors.first(), colors.first())
+    }
     val cardDepthStyle = LocalCardDepthStyle.current
     val cardGlow = rememberArtworkBackedCardGlow(
         imageUrl = folder.coverImageUrl,
@@ -283,6 +300,10 @@ private fun FolderCard(
             focusedContainerColor = NuvioTheme.colors.BackgroundCard
         ),
         border = CardDefaults.border(
+            border = Border(
+                border = BorderStroke(1.dp, Brush.linearGradient(borderColors.map { it.copy(alpha = 0.5f) })),
+                shape = shape
+            ),
             focusedBorder = Border(
                 border = NuvioTheme.focusRing.border(posterCardStyle.focusedBorderWidth),
                 shape = shape
@@ -301,40 +322,53 @@ private fun FolderCard(
                     style = cardDepthStyle
                 )
         ) {
-            val activeImageUrl = collectionFolderCardImageUrl(folder, isFocused)
-            if (!activeImageUrl.isNullOrBlank()) {
-                AsyncImage(
-                    model = activeImageUrl,
-                    contentDescription = if (folder.hideTitle) folder.title else null,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(shape),
-                    contentScale = ContentScale.FillBounds
-                )
-            } else if (!folder.coverEmoji.isNullOrBlank()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = folder.coverEmoji,
-                        fontSize = 48.sp
-                    )
-                }
+            val useComposedLandscape = folder.tileShape == PosterShape.LANDSCAPE &&
+                folder.coverImageUrl.isNullOrBlank() && folder.coverEmoji.isNullOrBlank() && !folder.hideTitle
+            if (useComposedLandscape) {
+                TitaniumLandscapeArtwork(folder = folder, focused = isFocused)
             } else {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = folder.title.take(2).uppercase(),
-                        style = MaterialTheme.typography.headlineLarge,
-                        color = NuvioTheme.colors.TextSecondary
+                val activeImageUrl = collectionFolderCardImageUrl(folder, isFocused)
+                if (!activeImageUrl.isNullOrBlank()) {
+                    var coverFailed by remember(activeImageUrl) { mutableStateOf(false) }
+                    if (coverFailed && folder.tileShape == PosterShape.LANDSCAPE) {
+                        TitaniumLandscapeArtwork(folder = folder, focused = isFocused)
+                    }
+                    AsyncImage(
+                        model = activeImageUrl,
+                        contentDescription = if (folder.hideTitle) folder.title else null,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(shape),
+                        contentScale = ContentScale.Fit,
+                        onError = { coverFailed = true },
+                        onSuccess = { coverFailed = false }
                     )
+                } else if (!folder.coverEmoji.isNullOrBlank()) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = folder.coverEmoji,
+                            fontSize = 48.sp
+                        )
+                    }
+                } else {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = folder.title.take(2).uppercase(),
+                            style = MaterialTheme.typography.headlineLarge,
+                            color = NuvioTheme.colors.TextSecondary
+                        )
+                    }
                 }
+
             }
 
-            // GIF overlay: show on top of cover image or emoji, visible only once loaded
+            // GIF overlay: show on top of any cover shape, visible only once loaded
             val focusGifUrl = if (isFocused && folder.focusGifEnabled) folder.focusGifUrl else null
             if (!focusGifUrl.isNullOrBlank()) {
                 var gifLoaded by remember(focusGifUrl) { mutableStateOf(false) }
@@ -350,12 +384,53 @@ private fun FolderCard(
                         .fillMaxSize()
                         .clip(shape)
                         .graphicsLayer { alpha = gifAlpha },
-                    contentScale = ContentScale.FillBounds,
+                    contentScale = ContentScale.Fit,
                     onSuccess = { gifLoaded = true }
                 )
             }
 
-            if (!folder.hideTitle) {
+            if (animateCovers && isFocused) {
+                val transition = rememberInfiniteTransition(label = "titaniumCoverFocus")
+                val glowOpacity by transition.animateFloat(
+                    initialValue = 0.4f,
+                    targetValue = 0.95f,
+                    animationSpec = infiniteRepeatable(tween(1350), RepeatMode.Reverse),
+                    label = "glow"
+                )
+                val sweepPosition by transition.animateFloat(
+                    initialValue = -0.25f,
+                    targetValue = 1.25f,
+                    animationSpec = infiniteRepeatable(tween(2900, easing = LinearEasing)),
+                    label = "sheen"
+                )
+                val cyan = Color(0xFF45E8FF)
+                val pink = Color(0xFFF35AFF)
+                Canvas(Modifier.fillMaxSize()) {
+                    val center = size.width * sweepPosition
+                    val halfWidth = size.width * 0.19f
+                    drawRect(
+                        brush = Brush.linearGradient(
+                            colors = listOf(Color.Transparent, Color.White.copy(alpha = 0.13f), Color.Transparent),
+                            start = Offset(center - halfWidth, 0f),
+                            end = Offset(center + halfWidth, size.height * 0.28f)
+                        )
+                    )
+                    val inset = 1.5.dp.toPx()
+                    if (size.width > inset * 2 && size.height > inset * 2) {
+                        drawRoundRect(
+                            brush = Brush.linearGradient(
+                                listOf(cyan.copy(alpha = glowOpacity), pink.copy(alpha = glowOpacity))
+                            ),
+                            topLeft = Offset(inset, inset),
+                            size = Size(size.width - inset * 2, size.height - inset * 2),
+                            cornerRadius = CornerRadius((posterCardStyle.cornerRadius.toPx() - inset).coerceAtLeast(0f)),
+                            style = Stroke(width = 1.4.dp.toPx())
+                        )
+                    }
+                }
+            }
+
+            if (!useComposedLandscape && !folder.hideTitle) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()

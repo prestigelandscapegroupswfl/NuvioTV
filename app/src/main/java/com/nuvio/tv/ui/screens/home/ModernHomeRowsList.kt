@@ -90,6 +90,7 @@ internal fun ModernHomeRowsList(
     contentFocusRequester: FocusRequester,
     rowsViewportHeight: Dp,
     catalogBottomPadding: Dp,
+    cinemaCoverWidth: Dp?,
     trailerContentAlpha: () -> Float,
     verticalRowBringIntoViewSpec: BringIntoViewSpec,
     onRowItemFocusedInternal: (String, Int, Boolean) -> Unit,
@@ -364,7 +365,9 @@ internal fun ModernHomeRowsList(
                     },
                 ),
             contentPadding = PaddingValues(bottom = rowsViewportHeight),
-            verticalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.xl)
+            verticalArrangement = Arrangement.spacedBy(
+                if (cinemaCoverWidth != null) NuvioTheme.spacing.sm else NuvioTheme.spacing.xl
+            )
         ) {
             itemsIndexed(
                 items = carouselRows.list,
@@ -423,11 +426,15 @@ internal fun ModernHomeRowsList(
                         }
                     }
                 }
+                val cinemaWidth = cinemaCoverWidth?.takeIf {
+                    isTitaniumCinemaShelf(row.title) &&
+                        row.items.list.firstOrNull()?.payload is ModernPayload.CollectionFolder
+                }
                 ModernRowSection(
                     row = row,
                     isActiveRow = isActiveRowLambda,
                     rowFocusRequester = rowFocusRequesters.getOrPut(row.key) { FocusRequester() },
-                    rowTitleBottom = 14.dp, // rowTitleBottom
+                    rowTitleBottom = if (cinemaWidth != null) 6.dp else 14.dp,
                     defaultBringIntoViewSpec = defaultBringIntoViewSpec,
                     focusStateCatalogRowScrollIndex = focusState.catalogRowScrollStates[row.key] ?: 0,
                     focusStateCatalogRowScrollAnchor = focusState.catalogRowScrollAnchors[row.key],
@@ -452,8 +459,8 @@ internal fun ModernHomeRowsList(
                     expandedTrailerPreviewAudioUrl = expandedTrailerPreviewAudioUrl,
                     portraitCatalogCardWidth = portraitCatalogCardWidth,
                     portraitCatalogCardHeight = portraitCatalogCardHeight,
-                    landscapeCatalogCardWidth = landscapeCatalogCardWidth,
-                    landscapeCatalogCardHeight = landscapeCatalogCardHeight,
+                    landscapeCatalogCardWidth = cinemaWidth ?: landscapeCatalogCardWidth,
+                    landscapeCatalogCardHeight = cinemaWidth?.div(2.25f) ?: landscapeCatalogCardHeight,
                     continueWatchingCardWidth = continueWatchingCardWidth,
                     continueWatchingCardHeight = continueWatchingCardHeight,
                     blurUnwatchedEpisodes = blurUnwatchedEpisodes,

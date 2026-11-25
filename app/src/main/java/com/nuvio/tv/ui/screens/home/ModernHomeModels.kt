@@ -10,6 +10,7 @@ import com.nuvio.tv.domain.model.Collection
 import com.nuvio.tv.domain.model.CollectionFolder
 import com.nuvio.tv.domain.model.ContentType
 import com.nuvio.tv.domain.model.PosterShape
+import com.nuvio.tv.ui.components.titaniumCoverFor
 import com.nuvio.tv.domain.model.stableKey
 import com.nuvio.tv.ui.util.localizeEpisodeTitle
 import com.nuvio.tv.ui.util.localizedContentType
@@ -92,7 +93,8 @@ sealed class ModernPayload {
         val heroBackdropUrl: String?,
         val heroVideoUrl: String?,
         val titleLogoUrl: String?,
-        val coverEmoji: String? = null
+        val coverEmoji: String? = null,
+        val hasCustomCover: Boolean = false
     ) : ModernPayload()
 }
 
@@ -548,6 +550,8 @@ internal fun buildCollectionFolderItem(
     // when no cover image is available.
     // GIF URL is only used as an animated overlay on focus (when focusGifEnabled is true).
     // Don't use it as a static poster — it would still animate via Coil's GIF decoder.
+    val builtInLandscape = !folder.hideTitle && folder.coverImageUrl.isNullOrBlank() &&
+        folder.coverEmoji.isNullOrBlank() && titaniumCoverFor(folder.title) != null
     val imageUrl = firstNonBlank(folder.coverImageUrl, collection.backdropImageUrl)
     val heroBackdrop = firstNonBlank(folder.heroBackdropUrl, folder.coverImageUrl, collection.backdropImageUrl)
 
@@ -573,14 +577,15 @@ internal fun buildCollectionFolderItem(
             collectionId = collection.id,
             collectionTitle = collection.title,
             folderId = folder.id,
-            posterShape = folder.tileShape,
+            posterShape = if (builtInLandscape) PosterShape.LANDSCAPE else folder.tileShape,
             focusGlowEnabled = collection.focusGlowEnabled,
             focusGifEnabled = folder.focusGifEnabled,
             focusGifUrl = folder.focusGifUrl,
             heroBackdropUrl = folder.heroBackdropUrl,
             heroVideoUrl = folder.heroVideoUrl,
             titleLogoUrl = folder.titleLogoUrl,
-            coverEmoji = folder.coverEmoji
+            coverEmoji = folder.coverEmoji,
+            hasCustomCover = !folder.coverImageUrl.isNullOrBlank()
         )
     )
 }

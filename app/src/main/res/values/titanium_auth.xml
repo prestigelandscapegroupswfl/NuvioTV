@@ -1,0 +1,6 @@
+<resources>
+    <string name="titanium_brand_name" translatable="false">Titanium X</string>
+    <string name="titanium_local_setup_title">Welcome to Titanium X</string>
+    <string name="titanium_cloud_unavailable">Cloud sign-in is not connected in this preview. Continue on this device to set up your collections, themes, and add-ons.</string>
+    <string name="titanium_continue_local">Continue without signing in</string>
+</resources>

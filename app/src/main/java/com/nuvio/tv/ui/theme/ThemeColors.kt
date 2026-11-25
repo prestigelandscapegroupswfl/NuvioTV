@@ -28,57 +28,81 @@ data class ThemeColorPalette(
 
 object ThemeColors {
     val Crimson = ThemeColorPalette(
-        secondary = NuvioPrimitives.red500,
-        secondaryVariant = NuvioPrimitives.red600,
-        focusRing = NuvioPrimitives.red300,
-        focusBackground = Color(0xFF3D1A1A),
-        backgroundCard = Color(0xFF241A1A)
+        secondary = Color(0xFFF25C65),
+        secondaryVariant = Color(0xFFA82446),
+        accentGradient = listOf(Color(0xFFF25C65), Color(0xFFFF9C8D)),
+        focusRing = Color(0xFFFF9C8D),
+        focusRingGradient = listOf(Color(0xFFF25C65), Color(0xFFFF9C8D)),
+        focusBackground = Color(0xFF3D2028),
+        background = Color(0xFF251217),
+        backgroundElevated = Color(0xFF3D2028),
+        backgroundCard = Color(0xFF3D2028),
+        surface = Color(0xFF3D2028)
     )
 
     val Ocean = ThemeColorPalette(
-        secondary = NuvioPrimitives.blue500,
-        secondaryVariant = NuvioPrimitives.blue700,
-        focusRing = NuvioPrimitives.blue300,
-        focusBackground = Color(0xFF1A2D3D),
-        background = Color(0xFF0D0D0F),
-        backgroundElevated = Color(0xFF1A1A1E),
-        backgroundCard = Color(0xFF1A1F24)
+        secondary = Color(0xFF36C8FF),
+        secondaryVariant = Color(0xFF356AA3),
+        accentGradient = listOf(Color(0xFF36C8FF), Color(0xFFD2ECFF)),
+        focusRing = Color(0xFFD2ECFF),
+        focusRingGradient = listOf(Color(0xFF36C8FF), Color(0xFFD2ECFF)),
+        focusBackground = Color(0xFF142B43),
+        background = Color(0xFF071B30),
+        backgroundElevated = Color(0xFF142B43),
+        backgroundCard = Color(0xFF142B43),
+        surface = Color(0xFF142B43)
     )
 
     val Violet = ThemeColorPalette(
-        secondary = NuvioPrimitives.violet500,
-        secondaryVariant = NuvioPrimitives.violet700,
-        focusRing = NuvioPrimitives.violet300,
-        focusBackground = Color(0xFF2D1A3D),
-        background = Color(0xFF0D0D0F),
-        backgroundElevated = Color(0xFF1A1A1E),
-        backgroundCard = Color(0xFF1F1A24)
+        secondary = Color(0xFFFF5399),
+        secondaryVariant = Color(0xFF754ACF),
+        accentGradient = listOf(Color(0xFFFF5399), Color(0xFF46E6FC)),
+        focusRing = Color(0xFF46E6FC),
+        focusRingGradient = listOf(Color(0xFFFF5399), Color(0xFF46E6FC)),
+        focusBackground = Color(0xFF302043),
+        background = Color(0xFF14162D),
+        backgroundElevated = Color(0xFF302043),
+        backgroundCard = Color(0xFF302043),
+        surface = Color(0xFF302043)
     )
 
     val Emerald = ThemeColorPalette(
-        secondary = NuvioPrimitives.green500,
-        secondaryVariant = NuvioPrimitives.green700,
-        focusRing = NuvioPrimitives.green300,
-        focusBackground = Color(0xFF1A3D1E),
-        backgroundCard = Color(0xFF1A241A)
+        secondary = Color(0xFF20DC8A),
+        secondaryVariant = Color(0xFF177D69),
+        accentGradient = listOf(Color(0xFF20DC8A), Color(0xFFC9ED60)),
+        focusRing = Color(0xFFC9ED60),
+        focusRingGradient = listOf(Color(0xFF20DC8A), Color(0xFFC9ED60)),
+        focusBackground = Color(0xFF153B30),
+        background = Color(0xFF082C23),
+        backgroundElevated = Color(0xFF153B30),
+        backgroundCard = Color(0xFF153B30),
+        surface = Color(0xFF153B30)
     )
 
     val Amber = ThemeColorPalette(
-        secondary = NuvioPrimitives.amber500,
-        secondaryVariant = NuvioPrimitives.amber700,
-        focusRing = NuvioPrimitives.amber300,
-        focusBackground = Color(0xFF3D2D1A),
-        background = Color(0xFF0F0D0D),
-        backgroundElevated = Color(0xFF1E1A1A),
-        backgroundCard = Color(0xFF24201A)
+        secondary = Color(0xFFFF6A32),
+        secondaryVariant = Color(0xFFD53922),
+        accentGradient = listOf(Color(0xFFFF6A32), Color(0xFFFFC451)),
+        focusRing = Color(0xFFFFC451),
+        focusRingGradient = listOf(Color(0xFFFF6A32), Color(0xFFFFC451)),
+        focusBackground = Color(0xFF4B2519),
+        background = Color(0xFF300B0B),
+        backgroundElevated = Color(0xFF4B2519),
+        backgroundCard = Color(0xFF4B2519),
+        surface = Color(0xFF4B2519)
     )
 
     val Rose = ThemeColorPalette(
-        secondary = NuvioPrimitives.rose500,
-        secondaryVariant = NuvioPrimitives.rose700,
-        focusRing = NuvioPrimitives.rose300,
-        focusBackground = Color(0xFF3D1A2D),
-        backgroundCard = Color(0xFF241A1F)
+        secondary = Color(0xFFFF5399),
+        secondaryVariant = Color(0xFFF56B3E),
+        accentGradient = listOf(Color(0xFFFF5399), Color(0xFFFFD29B)),
+        focusRing = Color(0xFFFFD29B),
+        focusRingGradient = listOf(Color(0xFFFF5399), Color(0xFFFFD29B)),
+        focusBackground = Color(0xFF45233A),
+        background = Color(0xFF29122E),
+        backgroundElevated = Color(0xFF45233A),
+        backgroundCard = Color(0xFF45233A),
+        surface = Color(0xFF45233A)
     )
 
     val White = ThemeColorPalette(
