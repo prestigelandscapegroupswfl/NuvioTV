@@ -94,6 +94,7 @@ jobs:
           tools_dir="$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)"
           "$tools_dir/aapt" dump badging shield-preview/Titanium-X-Shield-Preview.apk > shield-preview/APK-INFO.txt
           grep -q "package: name='com.titaniumx.tv.debug'" shield-preview/APK-INFO.txt
+          grep -Fq "application-label:'Titanium X'" shield-preview/APK-INFO.txt
           grep -q 'arm64-v8a' shield-preview/APK-INFO.txt
           "$tools_dir/apksigner" verify --verbose --print-certs shield-preview/Titanium-X-Shield-Preview.apk > shield-preview/SIGNATURE.txt
           printf 'Source commit: %s\nBuild run: %s\n' "$GITHUB_SHA" "$GITHUB_RUN_ID" > shield-preview/BUILD.txt
