@@ -261,8 +261,7 @@ private fun SidebarNavigationItem(
     val backgroundColor = if (selected && !isFocused) backgroundColorTarget else animatedBackgroundColor
 
     val contentColorTarget = when {
-        selected -> accentColor
-        isFocused -> colors.TextPrimary
+        selected || isFocused -> colors.text.onOverlay
         else -> colors.text.onOverlay
     }
     val animatedContentColor by animateColorAsState(
@@ -272,6 +271,14 @@ private fun SidebarNavigationItem(
     )
     val contentColor = if (selected && !isFocused) contentColorTarget else animatedContentColor
 
+    val selectionColors = palette.focusRingGradient.ifEmpty { listOf(colors.FocusRing) }
+    val gradient = if (selectionColors.size == 1) selectionColors + selectionColors else selectionColors
+    val selectionEdge = Brush.horizontalGradient(
+        gradient.map { it.copy(alpha = if (isFocused) 1f else 0.65f) }
+    )
+    val selectionFill = Brush.horizontalGradient(
+        gradient.map { it.copy(alpha = if (isFocused) 0.28f else 0.15f) }
+    )
     val iconBrush = if (selected) palette.accentBrush() else null
     val iconTintTarget = when {
         selected -> Color.White
@@ -325,6 +332,13 @@ private fun SidebarNavigationItem(
                     this.selected = selected
                 }
                 .fillMaxWidth()
+                .then(
+                    if (selected || isFocused) {
+                        Modifier
+                            .background(selectionFill, shape)
+                            .border(if (isFocused) 2.dp else 1.dp, selectionEdge, shape)
+                    } else Modifier
+                )
                 .padding(horizontal = NuvioTheme.spacing.lg - NuvioTheme.spacing.xxs, vertical = NuvioTheme.spacing.sm + NuvioTheme.spacing.xxs),
             verticalAlignment = Alignment.CenterVertically
         ) {

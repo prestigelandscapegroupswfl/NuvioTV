@@ -78,6 +78,27 @@ val devProperties = Properties().apply {
     }
 }
 
+// NuvioMedia/self-host .env.example documents these as public client configuration.
+val officialCloudUrl = "https://api.nuvio.tv"
+val officialCloudKey = "sb_publishable_1Clq8rlTVACkdcZuqr6_AD__xUUC_EN"
+
+fun cloudCredentials(vararg sources: Properties): Pair<String, String> {
+    for (properties in sources) {
+        val url = properties.getProperty("NUVIO_SUPABASE_URL", "").trim()
+        val key = properties.getProperty("NUVIO_SUPABASE_ANON_KEY", "").trim()
+        if (url.isNotEmpty() || key.isNotEmpty()) {
+            require(url.isNotEmpty() && key.isNotEmpty()) {
+                "Set NUVIO_SUPABASE_URL and NUVIO_SUPABASE_ANON_KEY together."
+            }
+            return url to key
+        }
+    }
+    return officialCloudUrl to officialCloudKey
+}
+
+val (debugCloudUrl, debugCloudKey) = cloudCredentials(devProperties, localProperties)
+val (releaseCloudUrl, releaseCloudKey) = cloudCredentials(localProperties)
+
 val enableDoviNative = parseBooleanProperty(
     resolveProperty(devProperties, localProperties, "DOVI_NATIVE_ENABLED")
 )
@@ -135,8 +156,8 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1076
-        versionName = "1.1.0-beta.12-titaniumx.1"
+        versionCode = 1077
+        versionName = "1.1.0-beta.12-titaniumx.2"
 
         buildConfigField("String", "PARENTAL_GUIDE_API_URL", "\"${localProperties.getProperty("PARENTAL_GUIDE_API_URL", "")}\"")
         buildConfigField("String", "INTRODB_API_URL", "\"${localProperties.getProperty("INTRODB_API_URL", "")}\"")
@@ -231,8 +252,8 @@ android {
             buildConfigField("String", "SENTRY_ENVIRONMENT", buildConfigString("debug"))
 
             // Dev environment (from local.dev.properties)
-            buildConfigField("String", "SUPABASE_URL", buildConfigString(resolveProperty(devProperties, localProperties, "NUVIO_SUPABASE_URL")))
-            buildConfigField("String", "SUPABASE_ANON_KEY", buildConfigString(resolveProperty(devProperties, localProperties, "NUVIO_SUPABASE_ANON_KEY")))
+            buildConfigField("String", "SUPABASE_URL", buildConfigString(debugCloudUrl))
+            buildConfigField("String", "SUPABASE_ANON_KEY", buildConfigString(debugCloudKey))
             buildConfigField("String", "SUPABASE_FALLBACK_URL", buildConfigString(resolveProperty(devProperties, localProperties, "NUVIO_SUPABASE_FALLBACK_URL")))
             buildConfigField("String", "TV_LOGIN_WEB_BASE_URL", "\"${devProperties.getProperty("TV_LOGIN_WEB_BASE_URL", "https://nuvio.tv/tv-login")}\"")
             buildConfigField("String", "DEVICE_LOGIN_WEB_BASE_URL", "\"${devProperties.getProperty("DEVICE_LOGIN_WEB_BASE_URL", "https://nuvio.tv/link")}\"")
@@ -266,8 +287,8 @@ android {
             buildConfigField("String", "SENTRY_ENVIRONMENT", buildConfigString("production"))
 
             // Production environment (from local.properties)
-            buildConfigField("String", "SUPABASE_URL", buildConfigString(localProperties.getProperty("NUVIO_SUPABASE_URL", "")))
-            buildConfigField("String", "SUPABASE_ANON_KEY", buildConfigString(localProperties.getProperty("NUVIO_SUPABASE_ANON_KEY", "")))
+            buildConfigField("String", "SUPABASE_URL", buildConfigString(releaseCloudUrl))
+            buildConfigField("String", "SUPABASE_ANON_KEY", buildConfigString(releaseCloudKey))
             buildConfigField("String", "SUPABASE_FALLBACK_URL", buildConfigString(localProperties.getProperty("NUVIO_SUPABASE_FALLBACK_URL", "")))
             buildConfigField("String", "TV_LOGIN_WEB_BASE_URL", "\"${localProperties.getProperty("TV_LOGIN_WEB_BASE_URL", "https://nuvio.tv/tv-login")}\"")
             buildConfigField("String", "DEVICE_LOGIN_WEB_BASE_URL", "\"${localProperties.getProperty("DEVICE_LOGIN_WEB_BASE_URL", "https://nuvio.tv/link")}\"")
