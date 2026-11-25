@@ -106,7 +106,8 @@ import com.nuvio.tv.ui.components.PosterCardDefaults
 import com.nuvio.tv.domain.model.localizedTitle
 import com.nuvio.tv.ui.components.LoadingIndicator
 import com.nuvio.tv.ui.components.NuvioDialog
-import com.nuvio.tv.ui.theme.NuvioThemeimport com.nuvio.tv.ui.theme.titaniumSelectedFill
+import com.nuvio.tv.ui.theme.NuvioTheme
+import com.nuvio.tv.ui.theme.titaniumSelectedFill
 import com.nuvio.tv.ui.theme.titaniumSelectedContainer
 import com.nuvio.tv.ui.theme.isTitaniumXTheme
 

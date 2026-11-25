@@ -2,7 +2,8 @@
 
 package com.nuvio.tv.ui.screens.settings
 
-import com.nuvio.tv.ui.theme.NuvioThemeimport com.nuvio.tv.ui.theme.titaniumSelectedFill
+import com.nuvio.tv.ui.theme.NuvioTheme
+import com.nuvio.tv.ui.theme.titaniumSelectedFill
 import com.nuvio.tv.ui.theme.titaniumSelectedContainer
 
 

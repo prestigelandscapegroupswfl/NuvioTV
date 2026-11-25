@@ -75,7 +75,8 @@ import com.nuvio.tv.domain.model.NextToWatch
 import com.nuvio.tv.ui.components.ImdbRatingSourceLabel
 import com.nuvio.tv.ui.components.MDBListRatingsRow
 import com.nuvio.tv.ui.components.SynopsisDescription
-import com.nuvio.tv.ui.theme.NuvioThemeimport com.nuvio.tv.ui.theme.titaniumSelectedFill
+import com.nuvio.tv.ui.theme.NuvioTheme
+import com.nuvio.tv.ui.theme.titaniumSelectedFill
 import com.nuvio.tv.ui.theme.titaniumSelectedContainer
 import com.nuvio.tv.ui.theme.isTitaniumXTheme
 
