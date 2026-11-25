@@ -17,8 +17,8 @@ jobs:
     timeout-minutes: 8
     env:
       GH_TOKEN: ${{ github.token }}
-      VERIFIED_RUN: '45558866553'
-      VERIFIED_HEAD: '0ad331c996c6817a4ef35300f0e6d6f6050b746c'
+      VERIFIED_RUN: '45629436298'
+      VERIFIED_HEAD: 'e3d56ed79a5e9f3559d443c38882de75bf3f1c46'
     steps:
       - name: Verify and publish the completed build
         shell: bash
@@ -44,7 +44,7 @@ jobs:
           sha256sum -c SHA256SUMS.txt
           test -s SIGNATURE.txt
           gh release create "$tag" --repo "$GITHUB_REPOSITORY" \
-            --target "$VERIFIED_HEAD" --title 'Titanium X — Cinematic Shield Preview' \
+            --target "$VERIFIED_HEAD" --title 'Titanium X — Cartoons Forever Shield Preview' \
             --prerelease --latest=false \
-            --notes 'Verified Android TV build with the large cinematic hero, featured collection shelves, and 18 built-in animated covers. Uses a per-run test signing key. Back up Titanium X before replacing an older preview. Keep your regular Nuvio installed.' \
+            --notes 'Titanium X artwork update for NVIDIA Shield. The Home shelves use original 16:9 Cartoons Forever covers from Early Years through the 2020s, all six Beloved Animated Specials covers, and a cyan-to-magenta glow and sheen on remote focus. Existing collection tiles use their saved catalog sources. This prerelease uses a per-run test signing key. Back up Titanium X settings before replacing an older preview. The Android package is com.titaniumx.tv.debug and installs separately from regular Nuvio.' \
             Titanium-X-Shield-Preview.apk SHA256SUMS.txt
