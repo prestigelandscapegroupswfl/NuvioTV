@@ -63,6 +63,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.nuvio.tv.R
+import com.nuvio.tv.ui.components.BrandWordmark
 import androidx.tv.material3.Border
 import androidx.tv.material3.Card
 import androidx.tv.material3.CardDefaults
@@ -1130,30 +1131,47 @@ fun ModernHomeContent(
                     .fillMaxWidth(MODERN_HERO_TEXT_WIDTH_FRACTION)
             }
 
-            HeroTitleBlock(
-                previewProvider = {
-                    val state = heroSceneStateLambda()
-                    if (isRapidHorizontalNav.value || state.enrichmentActive) null
-                    else state.preview
-                },
-                enrichmentActive = {
-                    if (isRapidHorizontalNav.value) false
-                    else heroSceneStateLambda().enrichmentActive
-                },
-                portraitMode = !useLandscapePosters,
-                showImdbRatings = uiState.homeImdbRatingsVisibility.showRatings,
-                mdbListShowOnHero = uiState.mdbListShowOnHero,
-                mdbListRatingOrder = uiState.mdbListRatingOrder,
-                trailerPlaying = {
-                    if (isRapidHorizontalNav.value) false
-                    else {
+            val focusedHomeRow = carouselRows.list.firstOrNull { it.key == activeRowKey.value }
+                ?: carouselRows.list.firstOrNull()
+            val isCollectionShelf = focusedHomeRow?.items?.list?.firstOrNull()?.payload
+                is ModernPayload.CollectionFolder
+            val showTitaniumBanner = isCollectionShelf &&
+                !shouldPlayCollectionHeroVideoUpdated && !shouldPlayCatalogHeroTrailerUpdated
+            if (showTitaniumBanner) {
+                BrandWordmark(
+                    contentDescription = "Titanium X",
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(top = screenHeight * 0.12f)
+                        .fillMaxWidth(0.58f)
+                        .height(screenHeight * 0.22f)
+                )
+            } else {
+                HeroTitleBlock(
+                    previewProvider = {
                         val state = heroSceneStateLambda()
-                        state.fullScreenBackdrop && shouldPlayTrailerLambda() && heroTrailerRenderedLambda()
-                    }
-                },
-                descriptionAutoScrollEnabled = uiState.heroDescriptionAutoScrollEnabled,
-                modifier = heroMetadataModifier
-            )
+                        if (isRapidHorizontalNav.value || state.enrichmentActive) null
+                        else state.preview
+                    },
+                    enrichmentActive = {
+                        if (isRapidHorizontalNav.value) false
+                        else heroSceneStateLambda().enrichmentActive
+                    },
+                    portraitMode = !useLandscapePosters,
+                    showImdbRatings = uiState.homeImdbRatingsVisibility.showRatings,
+                    mdbListShowOnHero = uiState.mdbListShowOnHero,
+                    mdbListRatingOrder = uiState.mdbListRatingOrder,
+                    trailerPlaying = {
+                        if (isRapidHorizontalNav.value) false
+                        else {
+                            val state = heroSceneStateLambda()
+                            state.fullScreenBackdrop && shouldPlayTrailerLambda() && heroTrailerRenderedLambda()
+                        }
+                    },
+                    descriptionAutoScrollEnabled = uiState.heroDescriptionAutoScrollEnabled,
+                    modifier = heroMetadataModifier
+                )
+            }
 
             val latestOnFocusedRowKeyChanged by rememberUpdatedState(onFocusedRowKeyChanged)
             val onActiveRowKeyChangeLambda = remember {

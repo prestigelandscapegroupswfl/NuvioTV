@@ -20,6 +20,7 @@ import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -540,20 +541,32 @@ internal fun ModernRowSection(
         )
     ) {
         val titleMediumStyle = MaterialTheme.typography.titleMedium
-        val rowTitleStyle = remember(titleMediumStyle) {
-            titleMediumStyle.copy(fontWeight = FontWeight.SemiBold)
-        }
-        val rowTitle = row.title
-        val textColor = NuvioTheme.colors.TextPrimary
-        val textModifier = remember(rowTitleBottom) {
-            Modifier.padding(start = 52.dp, bottom = rowTitleBottom)
-        }
-        Text(
-            text = rowTitle,
-            style = rowTitleStyle.copy(textDirection = rowTitle.contentTextDirection()),
-            color = textColor,
-            modifier = textModifier
+        val collectionShelf = row.items.list.firstOrNull()?.payload is ModernPayload.CollectionFolder
+        val rowTitleStyle = titleMediumStyle.copy(
+            fontWeight = if (collectionShelf) FontWeight.Bold else FontWeight.SemiBold
         )
+        val rowTitle = row.title
+        Row(
+            modifier = Modifier.padding(start = 52.dp, bottom = rowTitleBottom),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (collectionShelf) {
+                val palette = NuvioTheme.palette
+                val accentColors = palette.focusRingGradient.ifEmpty { listOf(palette.secondary) }
+                val gradient = if (accentColors.size > 1) accentColors else accentColors + accentColors
+                Box(
+                    Modifier
+                        .padding(end = 8.dp)
+                        .size(width = 3.dp, height = 17.dp)
+                        .background(Brush.verticalGradient(gradient))
+                )
+            }
+            Text(
+                text = rowTitle,
+                style = rowTitleStyle.copy(textDirection = rowTitle.contentTextDirection()),
+                color = NuvioTheme.colors.TextPrimary
+            )
+        }
 
         val rowListState = rowListStates.getOrPut(row.key) {
             // Resolved when the row is built, so a refresh that already moved the card is seen.
