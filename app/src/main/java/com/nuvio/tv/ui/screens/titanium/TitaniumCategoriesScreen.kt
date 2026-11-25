@@ -73,8 +73,7 @@ fun TitaniumCategoriesScreen(
                 TitaniumTileCard(
                     tile = tile,
                     onClick = { onTileClick(tile) },
-                    width = 380.dp,
-                    height = 214.dp
+                    fillCell = true
                 )
             }
         }

@@ -4,7 +4,9 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -111,17 +113,30 @@ fun TitaniumTileCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     width: Dp = 296.dp,
-    height: Dp = 166.dp
+    height: Dp = 166.dp,
+    fillCell: Boolean = false
 ) {
     var isFocused by remember { mutableStateOf(false) }
     val brush = titaniumGradientBrush()
     val shape = RoundedCornerShape(14.dp)
     val scale = if (isFocused) 1.05f else 1f
 
-    Box(
-        modifier = modifier
+    // In grid cells the card must follow the cell's width at the tiles'
+    // native 16:9 landscape aspect; a fixed width/height overflows the
+    // narrower grid cell and the art gets clipped into a near-portrait crop.
+    val sizeModifier = if (fillCell) {
+        Modifier
+            .fillMaxWidth()
+            .aspectRatio(16f / 9f)
+    } else {
+        Modifier
             .width(width)
             .height(height)
+    }
+
+    Box(
+        modifier = modifier
+            .then(sizeModifier)
             .graphicsLayer {
                 scaleX = scale
                 scaleY = scale

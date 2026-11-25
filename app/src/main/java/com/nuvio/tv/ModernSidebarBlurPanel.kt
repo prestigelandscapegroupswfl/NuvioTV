@@ -156,7 +156,7 @@ internal fun ModernSidebarBlurPanel(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .offset(y = NuvioTheme.spacing.md),
+                    .padding(top = NuvioTheme.spacing.md),
                 contentAlignment = Alignment.Center
             ) {
                 SidebarProfileItem(
@@ -176,7 +176,7 @@ internal fun ModernSidebarBlurPanel(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .offset(y = NuvioTheme.spacing.md),
+                    .padding(top = NuvioTheme.spacing.md),
                 contentAlignment = Alignment.Center
             ) {
                 BrandWordmark(

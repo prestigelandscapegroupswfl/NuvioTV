@@ -27,8 +27,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -128,7 +126,6 @@ fun TitaniumHomeContent(
     scrollToTopTrigger: Int = 0
 ) {
     val listState = rememberLazyListState()
-    val firstTileFocusRequester = remember { FocusRequester() }
 
     LaunchedEffect(scrollToTopTrigger) {
         if (scrollToTopTrigger > 0) {
@@ -136,12 +133,11 @@ fun TitaniumHomeContent(
         }
     }
 
-    // Land initial focus on the first category tile, like the mockup's
-    // highlighted first row.
-    LaunchedEffect(Unit) {
-        delay(200)
-        runCatching { firstTileFocusRequester.requestFocus() }
-    }
+    // NOTE: no initial-focus request here. Auto-focusing the first category
+    // tile on entry made the LazyColumn scroll the tile fully into view,
+    // which pushed the hero band off the top of the screen (only a sliver
+    // stayed visible on TV). The hero must be fully visible on entry; the
+    // first D-pad press moves focus into the rows naturally.
 
     val visibleHomeRows = remember(uiState.homeRows, uiState.catalogRows) {
         if (uiState.homeRows.isNotEmpty()) {
@@ -163,12 +159,11 @@ fun TitaniumHomeContent(
             TitaniumHeroHeader()
         }
 
-        TitaniumSection.entries.forEachIndexed { sectionIndex, section ->
+        TitaniumSection.entries.forEach { section ->
             item(key = "titanium_row_${section.name}", contentType = "titanium_row") {
                 TitaniumCategoryRow(
                     section = section,
-                    onTileClick = onTitaniumTileClick,
-                    firstTileFocusRequester = if (sectionIndex == 0) firstTileFocusRequester else null
+                    onTileClick = onTitaniumTileClick
                 )
             }
         }
@@ -364,8 +359,7 @@ private fun TitaniumHeroHeader() {
 @Composable
 private fun TitaniumCategoryRow(
     section: TitaniumSection,
-    onTileClick: (TitaniumTile) -> Unit,
-    firstTileFocusRequester: FocusRequester? = null
+    onTileClick: (TitaniumTile) -> Unit
 ) {
     Column {
         Row(
@@ -397,12 +391,7 @@ private fun TitaniumCategoryRow(
             items(section.tiles, key = { it.label }) { tile ->
                 TitaniumTileCard(
                     tile = tile,
-                    onClick = { onTileClick(tile) },
-                    modifier = if (tile === section.tiles.first() && firstTileFocusRequester != null) {
-                        Modifier.focusRequester(firstTileFocusRequester)
-                    } else {
-                        Modifier
-                    }
+                    onClick = { onTileClick(tile) }
                 )
             }
         }

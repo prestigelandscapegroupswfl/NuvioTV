@@ -2268,6 +2268,7 @@ private fun ModernSidebarScaffold(
             if (
                 !sidebarCollapsed &&
                 sidebarShowCollapsedPill &&
+                !showExpandedPanel &&
                 selectedDrawerRoute != Screen.Search.route
             ) {
                 CollapsedSidebarPill(
