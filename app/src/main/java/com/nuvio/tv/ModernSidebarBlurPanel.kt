@@ -247,7 +247,12 @@ private fun SidebarNavigationItem(
     val shape = RoundedCornerShape(NuvioRadii.tokens.full)
     val palette = NuvioTheme.palette
     val accentColor = palette.secondary
+    // Titanium X: the selected item is a full cyan -> magenta gradient pill,
+    // as in the mockup, instead of a translucent accent wash.
+    val gradientPill = selected &&
+        NuvioTheme.currentTheme == com.nuvio.tv.domain.model.AppTheme.TITANIUM_X
     val backgroundColorTarget = when {
+        gradientPill -> Color.Transparent
         isFocused && selected -> accentColor.copy(alpha = 0.28f)
         isFocused -> Color.White.copy(alpha = 0.12f)
         selected -> accentColor.copy(alpha = 0.15f)
@@ -261,6 +266,7 @@ private fun SidebarNavigationItem(
     val backgroundColor = if (selected && !isFocused) backgroundColorTarget else animatedBackgroundColor
 
     val contentColorTarget = when {
+        gradientPill -> Color.White
         selected -> accentColor
         isFocused -> colors.TextPrimary
         else -> colors.text.onOverlay
@@ -272,8 +278,9 @@ private fun SidebarNavigationItem(
     )
     val contentColor = if (selected && !isFocused) contentColorTarget else animatedContentColor
 
-    val iconBrush = if (selected) palette.accentBrush() else null
+    val iconBrush = if (selected && !gradientPill) palette.accentBrush() else null
     val iconTintTarget = when {
+        gradientPill -> Color.White
         selected -> Color.White
         isFocused -> colors.TextPrimary
         else -> colors.text.onOverlay
@@ -325,6 +332,15 @@ private fun SidebarNavigationItem(
                     this.selected = selected
                 }
                 .fillMaxWidth()
+                .then(
+                    if (gradientPill) {
+                        Modifier
+                            .clip(shape)
+                            .background(brush = palette.accentBrush())
+                    } else {
+                        Modifier
+                    }
+                )
                 .padding(horizontal = NuvioTheme.spacing.lg - NuvioTheme.spacing.xxs, vertical = NuvioTheme.spacing.sm + NuvioTheme.spacing.xxs),
             verticalAlignment = Alignment.CenterVertically
         ) {

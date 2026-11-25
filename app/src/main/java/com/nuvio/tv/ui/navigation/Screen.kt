@@ -140,6 +140,25 @@ sealed class Screen(val route: String) {
     }
     data object Search : Screen("search")
     data object Discover : Screen("discover")
+
+    // Titanium X sidebar destinations
+    data object DiscoverMovies : Screen("discover_movies")
+    data object DiscoverSeries : Screen("discover_series")
+    data object DiscoverGenre : Screen("discover_genre/{genre}") {
+        private fun encode(value: String): String =
+            URLEncoder.encode(value, "UTF-8").replace("+", "%20")
+
+        fun createRoute(genre: String): String = "discover_genre/${encode(genre)}"
+    }
+    data object SearchQuery : Screen("search_query/{query}") {
+        private fun encode(value: String): String =
+            URLEncoder.encode(value, "UTF-8").replace("+", "%20")
+
+        fun createRoute(query: String): String = "search_query/${encode(query)}"
+    }
+    data object TitaniumGenres : Screen("titanium/genres")
+    data object TitaniumCollections : Screen("titanium/collections")
+    data object TitaniumDecades : Screen("titanium/decades")
     data object Library : Screen("library")
     data object Settings : Screen("settings")
     data object Tracking : Screen("trakt")
