@@ -34,8 +34,8 @@
     <application
         android:name=".NuvioApplication"
         android:allowBackup="false"
-        android:banner="@mipmap/banner"
-        android:icon="@mipmap/ic_launcher"
+        android:banner="@drawable/titanium_banner"
+        android:icon="@drawable/titanium_mark"
         android:label="@string/app_name"
         android:largeHeap="true"
         android:extractNativeLibs="true"
@@ -106,11 +106,11 @@
 
         <activity
             android:name=".launcher.AppIconDefault"
-            android:banner="@mipmap/banner"
+            android:banner="@drawable/titanium_banner"
             android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|density|uiMode|keyboard|keyboardHidden|navigation|layoutDirection|fontScale|locale"
             android:enabled="true"
             android:exported="true"
-            android:icon="@mipmap/ic_launcher"
+            android:icon="@drawable/titanium_mark"
             android:label="@string/app_name"
             android:launchMode="singleTop"
             android:theme="@style/Theme.MyApplication.Launcher">
@@ -123,11 +123,11 @@
 
         <activity
             android:name=".launcher.AppIconArcticBlue"
-            android:banner="@mipmap/banner_arctic_blue"
+            android:banner="@drawable/titanium_banner_arctic_blue"
             android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|density|uiMode|keyboard|keyboardHidden|navigation|layoutDirection|fontScale|locale"
             android:enabled="false"
             android:exported="true"
-            android:icon="@mipmap/ic_launcher_arctic_blue"
+            android:icon="@drawable/titanium_mark_arctic_blue"
             android:label="@string/app_name"
             android:launchMode="singleTop"
             android:theme="@style/Theme.MyApplication.Launcher">
@@ -140,11 +140,11 @@
 
         <activity
             android:name=".launcher.AppIconEmerald"
-            android:banner="@mipmap/banner_emerald"
+            android:banner="@drawable/titanium_banner_emerald"
             android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|density|uiMode|keyboard|keyboardHidden|navigation|layoutDirection|fontScale|locale"
             android:enabled="false"
             android:exported="true"
-            android:icon="@mipmap/ic_launcher_emerald"
+            android:icon="@drawable/titanium_mark_emerald"
             android:label="@string/app_name"
             android:launchMode="singleTop"
             android:theme="@style/Theme.MyApplication.Launcher">
@@ -157,11 +157,11 @@
 
         <activity
             android:name=".launcher.AppIconRoseGold"
-            android:banner="@mipmap/banner_rose_gold"
+            android:banner="@drawable/titanium_banner_rose_gold"
             android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|density|uiMode|keyboard|keyboardHidden|navigation|layoutDirection|fontScale|locale"
             android:enabled="false"
             android:exported="true"
-            android:icon="@mipmap/ic_launcher_rose_gold"
+            android:icon="@drawable/titanium_mark_rose_gold"
             android:label="@string/app_name"
             android:launchMode="singleTop"
             android:theme="@style/Theme.MyApplication.Launcher">
@@ -174,11 +174,11 @@
 
         <activity
             android:name=".launcher.AppIconCopper"
-            android:banner="@mipmap/banner_copper"
+            android:banner="@drawable/titanium_banner_copper"
             android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|density|uiMode|keyboard|keyboardHidden|navigation|layoutDirection|fontScale|locale"
             android:enabled="false"
             android:exported="true"
-            android:icon="@mipmap/ic_launcher_copper"
+            android:icon="@drawable/titanium_mark_copper"
             android:label="@string/app_name"
             android:launchMode="singleTop"
             android:theme="@style/Theme.MyApplication.Launcher">
@@ -191,11 +191,11 @@
 
         <activity
             android:name=".launcher.AppIconGraphite"
-            android:banner="@mipmap/banner_graphite"
+            android:banner="@drawable/titanium_banner_graphite"
             android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|density|uiMode|keyboard|keyboardHidden|navigation|layoutDirection|fontScale|locale"
             android:enabled="false"
             android:exported="true"
-            android:icon="@mipmap/ic_launcher_graphite"
+            android:icon="@drawable/titanium_mark_graphite"
             android:label="@string/app_name"
             android:launchMode="singleTop"
             android:theme="@style/Theme.MyApplication.Launcher">

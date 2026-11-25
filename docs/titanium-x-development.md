@@ -35,3 +35,9 @@ Run the existing PR Full Debug Build workflow from titanium-x-dev for a first pr
 The universal APK includes arm64-v8a and armeabi-v7a and is suitable as the first Shield compatibility candidate. Successful compilation does not verify device playback or Android TV performance.
 
 Shield acceptance: launch alongside Nuvio; remote D-pad navigation/back; all six palettes; collection import then export comparison; focus animations and hero media; authorized addon installation and playback; audio passthrough/subtitles; app restart persistence. Test cloud sign-in separately: upstream backend settings are not automatically inherited by a fork.
+
+## Branded Android preview implementation
+
+Original asset: Titanium X: Cinematic Neon Reveal.gif (nine frames, original timing), preserved byte-for-byte as app/src/main/res/raw/titanium_intro.gif. Intro overlay runs for at most six seconds; skip with the Shield remote or Back. It respects the existing startup splash setting. This is the original GIF; no sound asset was present.
+
+Native vector Titanium X wordmark, X launcher marks and TV banners replace default visual branding while preserving launcher color choices. Existing theme palettes, collections storage and artwork URLs remain unchanged. Upstream licenses and service/support attribution are retained.

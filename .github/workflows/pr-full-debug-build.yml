@@ -5,9 +5,14 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
     branches: [dev]
   workflow_dispatch:
+    inputs:
+      publish_preview:
+        description: Publish a Titanium X Shield testing APK after checks pass
+        type: boolean
+        default: true
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: pr-full-debug-build-${{ github.event.pull_request.number || github.ref }}
@@ -15,6 +20,7 @@ concurrency:
 
 jobs:
   full-debug-build:
+    if: github.head_ref == 'titanium-x-dev' || github.ref == 'refs/heads/titanium-x-dev'
     name: Build fullDebug APK
     runs-on: ubuntu-latest
 
@@ -67,12 +73,61 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: Test updater and build fullDebug APK
-        run: ./gradlew :app:testFullDebugUnitTest --tests 'com.nuvio.tv.updater.*' :app:assembleFullDebug --stacktrace
+        run: >-
+          ./gradlew :app:testFullDebugUnitTest
+          --tests 'com.nuvio.tv.updater.*'
+          --tests 'com.nuvio.tv.data.local.CollectionsDataStoreSourceMigrationTest'
+          --tests 'com.nuvio.tv.ui.theme.*'
+          --tests 'com.nuvio.tv.core.deeplink.DeepLinkParserTest'
+          :app:assembleFullDebug --stacktrace
 
-      - name: Upload fullDebug APK
-        uses: actions/upload-artifact@v7
+      - name: Prepare verified Shield preview
+        if: github.head_ref == 'titanium-x-dev' || github.ref == 'refs/heads/titanium-x-dev'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p shield-preview
+          cp app/build/outputs/apk/full/debug/app-full-universal-debug.apk shield-preview/Titanium-X-Shield-Preview.apk
+          cp LICENSE shield-preview/LICENSE.txt
+          cp docs/titanium-x-development.md shield-preview/DEVELOPMENT.md
+          tools_dir="$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)"
+          "$tools_dir/aapt" dump badging shield-preview/Titanium-X-Shield-Preview.apk > shield-preview/APK-INFO.txt
+          grep -q "package: name='com.titaniumx.tv.debug'" shield-preview/APK-INFO.txt
+          grep -q 'arm64-v8a' shield-preview/APK-INFO.txt
+          "$tools_dir/apksigner" verify --verbose --print-certs shield-preview/Titanium-X-Shield-Preview.apk > shield-preview/SIGNATURE.txt
+          printf 'Source commit: %s\nBuild run: %s\n' "$GITHUB_SHA" "$GITHUB_RUN_ID" > shield-preview/BUILD.txt
+          printf '%s\n' 'First Shield test build. Install alongside Nuvio; do not uninstall Nuvio.' 'This preview uses a per-run CI test certificate. Export Titanium X settings before changing preview builds. Persistent signing is required for long-term updates.' 'Contains the original Titanium X intro GIF. Device playback and cloud sign-in need Shield testing.' > shield-preview/INSTALL.txt
+          (cd shield-preview && sha256sum Titanium-X-Shield-Preview.apk > SHA256SUMS.txt)
+          (cd shield-preview && zip -q ../Titanium-X-Shield-Preview.zip ./*)
+
+      - name: Upload fullDebug APK and checks
+        uses: actions/upload-artifact@v4
         with:
-          path: app/build/outputs/apk/full/debug/app-full-universal-debug.apk
-          archive: false
+          name: titanium-x-shield-preview
+          path: |
+            shield-preview/
+            Titanium-X-Shield-Preview.zip
           if-no-files-found: error
-          retention-days: 7
+          retention-days: 30
+
+      - name: Upload test diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: titanium-x-test-results
+          path: |
+            app/build/reports/tests/
+            app/build/test-results/
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Publish Titanium X preview
+        if: github.event_name == 'workflow_dispatch' && inputs.publish_preview && github.ref == 'refs/heads/titanium-x-dev'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="titanium-x-preview-${GITHUB_RUN_ID}"
+          printf '%s\n' 'Titanium X first Shield testing preview.' '' 'Separate app ID: com.titaniumx.tv.debug. Keep your existing Nuvio installed.' '' 'Includes the original neon cinematic intro GIF, Titanium X wordmark, launcher branding and existing custom gradient palettes.' '' 'This is a CI-signed preview with a per-run test certificate; future preview APKs may require export/reinstall/import. A persistent private signing key is needed for long-term updates.' '' 'Shield playback, remote navigation, animations and account sign-in are not yet device-verified. Advanced artwork and wizard ports remain planned; see DEVELOPMENT.md.' '' "Source commit: ${GITHUB_SHA}" > release-notes.md
+          gh release create "$tag" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "Titanium X — Shield Preview" --prerelease --latest=false --notes-file release-notes.md shield-preview/Titanium-X-Shield-Preview.apk Titanium-X-Shield-Preview.zip shield-preview/SHA256SUMS.txt

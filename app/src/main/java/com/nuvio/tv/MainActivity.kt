@@ -1272,6 +1272,7 @@ open class MainActivity : ComponentActivity() {
                             modifier = Modifier.graphicsLayer { alpha = splashAlpha }
                         )
                     }
+                    com.nuvio.tv.ui.components.TitaniumIntroOverlay(enabled = startupSplashEnabled)
                     }
                 }
                 }
