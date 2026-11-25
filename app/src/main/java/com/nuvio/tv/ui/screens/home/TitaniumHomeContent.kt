@@ -149,8 +149,9 @@ internal fun TitaniumHomeContent(
     BoxWithConstraints(Modifier.fillMaxSize().background(NuvioTheme.colors.Background)) {
         val coverWidth = ((maxWidth - 78.dp) / 4f).coerceAtLeast(92.dp)
         val coverHeight = coverWidth / 2.25f
+        val heroHeight = maxHeight * 0.30f
         Column(Modifier.fillMaxSize()) {
-            TitaniumHeroHeader(height = maxHeight * 0.30f)
+            TitaniumHeroHeader(height = heroHeight)
             LazyColumn(
                 state = listState,
                 modifier = Modifier.weight(1f).fillMaxWidth()
