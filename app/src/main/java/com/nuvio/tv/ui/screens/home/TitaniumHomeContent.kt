@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -325,7 +326,14 @@ private fun TitaniumHeroHeader() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(302.dp)
+            // The hero art is 1920x569 and carries the wordmark high in
+            // the frame and the tagline low. A fixed-height box made
+            // ContentScale.Crop cut the frame vertically at most TV
+            // densities, clipping the tops of the TITANIUM letters.
+            // Matching the box to the art's aspect ratio means the crop
+            // has nothing to remove — the full hero always sits inside
+            // the frame, whatever the screen size.
+            .aspectRatio(1920f / 569f)
     ) {
         Image(
             painter = painterResource(id = R.drawable.titanium_hero_backdrop),
