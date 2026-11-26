@@ -9,7 +9,9 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.preferencesDataStoreFile
+import com.nuvio.tv.domain.model.AppTheme
 import com.nuvio.tv.domain.model.DiscoverLocation
+import com.nuvio.tv.domain.model.HomeLayout
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -48,6 +50,46 @@ internal val discoverLocationMigration = object : DataMigration<Preferences> {
             mutable[discoverLocationKey] = resolved.name
         }
         mutable.remove(legacySearchDiscoverEnabledKey)
+        return mutable.toPreferences()
+    }
+
+    override suspend fun cleanUp() = Unit
+}
+
+/**
+ * Titanium X fork: one-time defaults migration, run on the first launch
+ * of this fork for each profile (marked by titaniumx_defaults_applied).
+ * This build must come up ready — Titanium X layout and theme selected,
+ * no setup screens — even when the profile's stored values were written
+ * by stock Nuvio (e.g. a Modern layout) or are missing entirely. After
+ * this single pass the marker is set, so any layout the user picks
+ * deliberately afterwards persists untouched.
+ */
+internal val titaniumXLayoutDefaultsMigration = object : DataMigration<Preferences> {
+    override suspend fun shouldMigrate(currentData: Preferences): Boolean =
+        titaniumXDefaultsAppliedKey !in currentData
+
+    override suspend fun migrate(currentData: Preferences): Preferences {
+        val mutable = currentData.toMutablePreferences()
+        mutable[selectedLayoutPrefsKey] = HomeLayout.TITANIUM_X.name
+        // Mark the layout as chosen so startup goes straight to Home
+        // instead of the first-run layout picker.
+        mutable[hasChosenLayoutPrefsKey] = true
+        mutable[titaniumXDefaultsAppliedKey] = true
+        return mutable.toPreferences()
+    }
+
+    override suspend fun cleanUp() = Unit
+}
+
+internal val titaniumXThemeDefaultsMigration = object : DataMigration<Preferences> {
+    override suspend fun shouldMigrate(currentData: Preferences): Boolean =
+        titaniumXThemeDefaultsAppliedKey !in currentData
+
+    override suspend fun migrate(currentData: Preferences): Preferences {
+        val mutable = currentData.toMutablePreferences()
+        mutable[selectedThemePrefsKey] = AppTheme.TITANIUM_X.name
+        mutable[titaniumXThemeDefaultsAppliedKey] = true
         return mutable.toPreferences()
     }
 
@@ -135,10 +177,12 @@ class ProfileDataStoreFactory @Inject constructor(
     private fun createAndCache(fileName: String): ScopedDataStore {
         val job = SupervisorJob()
         val scope = CoroutineScope(Dispatchers.IO + job)
-        val migrations = if (fileName == "layout_settings" || fileName.startsWith("layout_settings_p")) {
-            listOf(discoverLocationMigration)
-        } else {
-            emptyList()
+        val migrations = when {
+            fileName == "layout_settings" || fileName.startsWith("layout_settings_p") ->
+                listOf(discoverLocationMigration, titaniumXLayoutDefaultsMigration)
+            fileName == "theme_settings" || fileName.startsWith("theme_settings_p") ->
+                listOf(titaniumXThemeDefaultsMigration)
+            else -> emptyList()
         }
         // Ensure the datastore directory exists — prevents ENOENT on first read
         // when a profile-scoped file hasn't been created yet.

@@ -128,3 +128,6 @@ class ThemeDataStore @Inject constructor(
             prefs[themeKey]?.let { name -> AppTheme.entries.firstOrNull { it.name == name } }
         }
 }
+
+internal val selectedThemePrefsKey = stringPreferencesKey("selected_theme")
+internal val titaniumXThemeDefaultsAppliedKey = booleanPreferencesKey("titaniumx_defaults_applied")

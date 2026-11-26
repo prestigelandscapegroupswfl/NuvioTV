@@ -961,3 +961,6 @@ class LayoutPreferenceDataStore @Inject constructor(
 internal val legacySearchDiscoverEnabledKey = booleanPreferencesKey("search_discover_enabled")
 internal val discoverLocationKey = stringPreferencesKey("discover_location")
 internal val lastNonOffDiscoverLocationKey = stringPreferencesKey("last_non_off_discover_location")
+internal val selectedLayoutPrefsKey = stringPreferencesKey("selected_layout")
+internal val hasChosenLayoutPrefsKey = booleanPreferencesKey("has_chosen_layout")
+internal val titaniumXDefaultsAppliedKey = booleanPreferencesKey("titaniumx_defaults_applied")

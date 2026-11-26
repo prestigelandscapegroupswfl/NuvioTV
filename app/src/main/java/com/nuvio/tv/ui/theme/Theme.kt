@@ -66,10 +66,15 @@ fun NuvioTheme(
         ThemeColors.getColorPalette(appTheme, customThemeColors)
     }
     val focusRingStyle = createFocusRingStyle(palette)
+    // Titanium X: the deep-navy palette IS the surface look. The AMOLED /
+    // Pure Black Surfaces toggles must not flatten it to plain black, so
+    // they are ignored while the Titanium X theme is active. They keep
+    // working exactly as before for every other theme.
+    val titaniumXActive = appTheme == AppTheme.TITANIUM_X
     val colorScheme = NuvioColorScheme(
         palette = palette,
-        amoledMode = amoledMode,
-        amoledSurfacesMode = amoledSurfacesMode
+        amoledMode = amoledMode && !titaniumXActive,
+        amoledSurfacesMode = amoledSurfacesMode && !titaniumXActive
     )
     val typography = buildNuvioTypography(getFontFamily(appFont))
     val textStyles = buildNuvioTextStyles(typography)
