@@ -1496,6 +1496,17 @@ private fun PlaybackNavHost(
             )
         }
 
+        // Titanium X: WWE sidebar destination — same collections screen
+        // as Collections (see Screen.Wwe).
+        composable(Screen.Wwe.route) {
+            com.nuvio.tv.ui.screens.collection.CollectionManagementScreen(
+                onNavigateToEditor = { collectionId ->
+                    navController.navigate(Screen.CollectionEditor.createRoute(collectionId))
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
         composable(
             route = Screen.CollectionEditor.route,
             arguments = listOf(

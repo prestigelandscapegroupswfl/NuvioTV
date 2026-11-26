@@ -6,6 +6,8 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -203,7 +205,12 @@ internal fun ModernSidebarBlurPanel(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Column(
-                modifier = Modifier.offset(y = (-12).dp),
+                modifier = Modifier
+                    .offset(y = (-12).dp)
+                    // Titanium X: ten drawer items can overflow shorter
+                    // TV screens; scrolling keeps Settings reachable and
+                    // D-pad focus brings the focused item into view.
+                    .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.sm - NuvioTheme.spacing.xxs)
             ) {
                 drawerItems.forEachIndexed { index, item ->

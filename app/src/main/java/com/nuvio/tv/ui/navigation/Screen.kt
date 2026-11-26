@@ -194,6 +194,12 @@ sealed class Screen(val route: String) {
 
     data object Collections : Screen("collections")
 
+    // Titanium X: the WWE sidebar item lands on the same collections
+    // screen as Collections (the WWE shelf lives in Jay's collections),
+    // under its own route so drawer keys, focus requesters and selection
+    // state stay distinct from the Collections item.
+    data object Wwe : Screen("wwe")
+
     data object CollectionEditor : Screen("collection_editor?collectionId={collectionId}") {
         fun createRoute(collectionId: String? = null): String {
             return "collection_editor?collectionId=${collectionId ?: ""}"

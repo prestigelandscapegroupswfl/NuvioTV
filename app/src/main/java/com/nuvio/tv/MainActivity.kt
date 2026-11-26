@@ -45,7 +45,9 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -1092,6 +1094,7 @@ open class MainActivity : ComponentActivity() {
                             add(Screen.TitaniumCollections.route)
                             add(Screen.TitaniumDecades.route)
                             add(Screen.Collections.route)
+                            add(Screen.Wwe.route)
                             add(Screen.AddonManager.route)
                             if (discoverLocation == DiscoverLocation.IN_SIDEBAR) {
                                 add(Screen.Discover.route)
@@ -1104,6 +1107,7 @@ open class MainActivity : ComponentActivity() {
                     val strNavTvShows = stringResource(R.string.nav_tv_shows)
                     val strNavGenres = stringResource(R.string.nav_genres)
                     val strNavCollections = stringResource(R.string.nav_collections)
+                    val strNavWwe = stringResource(R.string.nav_wwe)
                     val strNavDecades = stringResource(R.string.nav_decades)
                     val strNavMyLists = stringResource(R.string.nav_my_lists)
                     val strNavAddons = stringResource(R.string.nav_addons)
@@ -1115,6 +1119,7 @@ open class MainActivity : ComponentActivity() {
                         strNavTvShows,
                         strNavGenres,
                         strNavCollections,
+                        strNavWwe,
                         strNavDecades,
                         strNavMyLists,
                         strNavAddons,
@@ -1146,10 +1151,23 @@ open class MainActivity : ComponentActivity() {
                                 titaniumIconRes = R.drawable.nav_icon_genres
                             ),
                             DrawerItem(
-                                route = Screen.TitaniumCollections.route,
+                                // Titanium X: Collections opens Jay's actual
+                                // shelves (the account collections screen),
+                                // not the category doors page. The Home
+                                // COLLECTIONS row tiles keep their doors.
+                                route = Screen.Collections.route,
                                 label = strNavCollections,
                                 icon = Icons.Default.VideoLibrary,
                                 titaniumIconRes = R.drawable.nav_icon_collections
+                            ),
+                            DrawerItem(
+                                // Titanium X: WWE shelf shortcut — lands on
+                                // the collections screen, where the WWE
+                                // shelf lives.
+                                route = Screen.Wwe.route,
+                                label = strNavWwe,
+                                icon = Icons.Default.EmojiEvents,
+                                titaniumIconRes = R.drawable.nav_icon_wwe
                             ),
                             DrawerItem(
                                 route = Screen.TitaniumDecades.route,
@@ -1330,14 +1348,24 @@ open class MainActivity : ComponentActivity() {
                         }
                     }
                     if (splashAlpha > 0f) {
-                        com.nuvio.tv.ui.components.StartupSplashScreen(
-                            profileColorHex = splashBackground.profileColorHex,
-                            profileBackgroundUrl = splashBackground.backgroundUrl,
-                            backgroundCacheKey = splashBackground.backgroundCacheKey,
-                            skipGradient = splashBackground.skipGradient,
-                            brandWordmarkRes = splashBackground.brandWordmarkRes,
-                            modifier = Modifier.graphicsLayer { alpha = splashAlpha }
-                        )
+                        // Titanium X: the splash is composed outside the
+                        // provider that wraps the main UI, so provide the
+                        // brand wordmark override here too — otherwise the
+                        // splash falls back to the profile theme's wordmark
+                        // (the stock "nuvio") while the rest of the app
+                        // brands as Titanium X.
+                        CompositionLocalProvider(
+                            LocalBrandWordmarkOverride provides brandWordmarkOverride
+                        ) {
+                            com.nuvio.tv.ui.components.StartupSplashScreen(
+                                profileColorHex = splashBackground.profileColorHex,
+                                profileBackgroundUrl = splashBackground.backgroundUrl,
+                                backgroundCacheKey = splashBackground.backgroundCacheKey,
+                                skipGradient = splashBackground.skipGradient,
+                                brandWordmarkRes = splashBackground.brandWordmarkRes,
+                                modifier = Modifier.graphicsLayer { alpha = splashAlpha }
+                            )
+                        }
                     }
                     }
                 }
@@ -1670,7 +1698,14 @@ private fun LegacySidebarScaffold(
                         modifier = Modifier
                             .align(Alignment.CenterStart)
                             .offset(y = 28.dp)
-                            .fillMaxWidth(),
+                            .fillMaxWidth()
+                            // Titanium X: with ten drawer items the fixed,
+                            // centred column overflows shorter TV screens —
+                            // the first item rode up over the header wordmark
+                            // and Settings fell off the bottom. Scrolling
+                            // keeps every item reachable; D-pad focus
+                            // brings the focused item into view.
+                            .verticalScroll(rememberScrollState()),
                         verticalArrangement = Arrangement.spacedBy(10.dp),
                         horizontalAlignment = Alignment.Start
                     ) {
