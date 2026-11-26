@@ -60,6 +60,7 @@ import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Tv
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.runtime.Composable
@@ -1166,7 +1167,7 @@ open class MainActivity : ComponentActivity() {
                                 // shelf lives.
                                 route = Screen.Wwe.route,
                                 label = strNavWwe,
-                                icon = Icons.Default.EmojiEvents,
+                                icon = Icons.Default.Star,
                                 titaniumIconRes = R.drawable.nav_icon_wwe
                             ),
                             DrawerItem(
